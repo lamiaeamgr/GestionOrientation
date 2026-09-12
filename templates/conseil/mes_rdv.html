@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Mes rendez-vous - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="section-title">Accompagnement</div>
+<h1 class="h3 text-ensi mb-4"><i class="bi bi-calendar-event me-2"></i>Mes rendez-vous</h1>
+
+<h2 class="h6 text-ensi mb-2"><i class="bi bi-calendar-plus me-1"></i>A venir</h2>
+<div class="card table-card mb-4"><table class="table mb-0">
+    <thead class="table-light"><tr><th>Date</th><th>Conseiller</th><th>Motif</th><th></th></tr></thead>
+    <tbody>
+        {% for rdv in a_venir %}
+            <tr>
+                <td>{{ rdv.date_rendez_vous|date:'d/m/Y H:i' }}</td>
+                <td>{{ rdv.conseiller.utilisateur.get_full_name }}</td>
+                <td>{{ rdv.motif|truncatewords:10 }}</td>
+                <td>
+                    <form method="post" action="{% url 'conseil:annuler' rdv.pk %}"
+                          onsubmit="return confirm('Annuler ce rendez-vous ?')">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">Aucun rendez-vous a venir.</td></tr>
+        {% endfor %}
+    </tbody>
+</table></div>
+
+<h2 class="h6 text-ensi mb-2"><i class="bi bi-clock-history me-1"></i>Historique</h2>
+<div class="card table-card mb-3"><table class="table mb-0">
+    <thead class="table-light"><tr><th>Date</th><th>Conseiller</th><th>Statut</th><th>Note du conseiller</th></tr></thead>
+    <tbody>
+        {% for rdv in passes %}
+            <tr>
+                <td>{{ rdv.date_rendez_vous|date:'d/m/Y H:i' }}</td>
+                <td>{{ rdv.conseiller.utilisateur.get_full_name }}</td>
+                <td><span class="badge bg-secondary">{{ rdv.get_statut_display }}</span></td>
+                <td class="small">{{ rdv.note_conseiller|truncatewords:15|default:'-' }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">Aucun historique.</td></tr>
+        {% endfor %}
+    </tbody>
+</table></div>
+<a class="btn btn-ensi" href="{% url 'conseil:conseillers' %}"><i class="bi bi-plus-lg me-1"></i>Nouveau rendez-vous</a>
+{% endblock %}

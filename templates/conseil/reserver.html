@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Reserver - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="stat-icon blue mx-auto mb-3"><i class="bi bi-calendar-check"></i></div>
+                    <h1 class="h4 text-ensi mb-0">Confirmer le rendez-vous</h1>
+                </div>
+                <div class="card bg-light border-0 mb-4"><div class="card-body py-3 small">
+                    <div class="mb-1"><i class="bi bi-person me-1 text-ensi"></i><strong>Conseiller :</strong> {{ dispo.conseiller.utilisateur.get_full_name }}</div>
+                    <div class="mb-1"><i class="bi bi-calendar me-1 text-ensi"></i><strong>Date :</strong> {{ dispo.date_heure_debut|date:'l d F Y a H:i' }}</div>
+                    <div><i class="bi bi-clock me-1 text-ensi"></i><strong>Duree :</strong> {{ dispo.date_heure_debut|time:'H:i' }} - {{ dispo.date_heure_fin|time:'H:i' }}</div>
+                </div></div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button class="btn btn-ensi"><i class="bi bi-check-lg me-1"></i>Confirmer la reservation</button>
+                    <a class="btn btn-outline-secondary" href="{% url 'conseil:conseillers' %}">Retour</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

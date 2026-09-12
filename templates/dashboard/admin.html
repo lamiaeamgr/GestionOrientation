@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard admin - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="section-title">Pilotage</div>
+        <h1 class="h3 text-ensi mb-0">Tableau de bord administrateur</h1>
+    </div>
+    <a class="btn btn-ensi" href="{% url 'admin:index' %}">
+        <i class="bi bi-gear me-1"></i>Administration Django
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card"><div class="card-body stat-card">
+        <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+        <div><div class="stat-value">{{ nb_candidats }}</div><div class="stat-label">Candidats inscrits</div></div>
+    </div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body stat-card">
+        <div class="stat-icon green"><i class="bi bi-person-check"></i></div>
+        <div><div class="stat-value">{{ nb_profils_complets }}</div><div class="stat-label">Profils completes</div></div>
+    </div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body stat-card">
+        <div class="stat-icon amber"><i class="bi bi-ui-checks-grid"></i></div>
+        <div><div class="stat-value">{{ nb_questionnaires }}</div><div class="stat-label">Questionnaires termines</div></div>
+    </div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body stat-card">
+        <div class="stat-icon purple"><i class="bi bi-calendar-check"></i></div>
+        <div><div class="stat-value">{{ nb_rdv }}</div><div class="stat-label">Rendez-vous confirmes</div></div>
+    </div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-bar-chart me-1"></i>Repartition des recommandations</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Formation</th><th>Recommandations</th><th>Score moyen</th></tr></thead>
+                <tbody>
+                    {% for r in repartition %}
+                        <tr><td>{{ r.formation__nom }}</td><td>{{ r.nb }}</td><td>{{ r.score_moyen|floatformat:1 }} %</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted">Aucune donnee.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-trophy me-1"></i>Filieres les mieux classees</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Formation</th><th>Score moyen</th><th>Occurrences</th></tr></thead>
+                <tbody>
+                    {% for r in top_filiere %}
+                        <tr><td>{{ r.formation__nom }}</td><td>{{ r.score_moyen|floatformat:1 }} %</td><td>{{ r.nb }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted">Aucune donnee.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-megaphone me-1"></i>Campagnes d'evaluation</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Campagne</th><th>Statut</th><th>Reponses</th></tr></thead>
+                <tbody>
+                    {% for c in campagnes %}
+                        <tr><td>{{ c.titre }}</td><td>{{ c.get_statut_display }}</td><td>{{ c.nb_reponses }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted">Aucune campagne.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-star-half me-1"></i>Evaluations des enseignants (agrege)</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Campagne</th><th>Moyenne /5</th><th>Criteres notes</th></tr></thead>
+                <tbody>
+                    {% for s in stats_eval %}
+                        <tr><td>{{ s.reponse__campagne__titre }}</td><td>{{ s.moyenne|floatformat:2 }}</td><td>{{ s.total }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted">Aucune reponse.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Espace conseiller - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="section-title">Conseiller</div>
+        <h1 class="h3 text-ensi mb-0"><i class="bi bi-person-workspace me-2"></i>Espace conseiller</h1>
+    </div>
+    <a class="btn btn-ensi" href="{% url 'conseil:disponibilites' %}">
+        <i class="bi bi-calendar-plus me-1"></i>Gerer mes disponibilites
+    </a>
+</div>
+
+<h2 class="h6 text-ensi mb-2"><i class="bi bi-calendar-check me-1"></i>Rendez-vous a venir</h2>
+<div class="card table-card mb-4"><table class="table mb-0">
+    <thead class="table-light"><tr><th>Date</th><th>Candidat</th><th>Motif</th><th></th></tr></thead>
+    <tbody>
+        {% for rdv in a_venir %}
+            <tr>
+                <td>{{ rdv.date_rendez_vous|date:'d/m/Y H:i' }}</td>
+                <td>{{ rdv.candidat.utilisateur.get_full_name|default:rdv.candidat.utilisateur.email }}</td>
+                <td>{{ rdv.motif|truncatewords:10 }}</td>
+                <td class="d-flex gap-2">
+                    <a class="btn btn-sm btn-ensi" href="{% url 'conseil:rdv_detail' rdv.pk %}">Ouvrir</a>
+                    <form method="post" action="{% url 'conseil:annuler' rdv.pk %}"
+                          onsubmit="return confirm('Annuler ce rendez-vous ?')">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">Aucun rendez-vous a venir.</td></tr>
+        {% endfor %}
+    </tbody>
+</table></div>
+
+<h2 class="h6 text-ensi mb-2"><i class="bi bi-clock-history me-1"></i>Historique</h2>
+<div class="card table-card"><table class="table mb-0">
+    <thead class="table-light"><tr><th>Date</th><th>Candidat</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+        {% for rdv in passes %}
+            <tr>
+                <td>{{ rdv.date_rendez_vous|date:'d/m/Y H:i' }}</td>
+                <td>{{ rdv.candidat.utilisateur.get_full_name|default:rdv.candidat.utilisateur.email }}</td>
+                <td><span class="badge bg-secondary">{{ rdv.get_statut_display }}</span></td>
+                <td><a class="btn btn-sm btn-outline-primary" href="{% url 'conseil:rdv_detail' rdv.pk %}">Voir</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">Aucun historique.</td></tr>
+        {% endfor %}
+    </tbody>
+</table></div>
+{% endblock %}

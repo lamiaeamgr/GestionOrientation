@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="card"><div class="card-body p-5">
+            <div class="stat-icon green mx-auto mb-3" style="width:64px;height:64px;font-size:2rem">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h1 class="h3 text-ensi">Merci !</h1>
+            <p class="text-muted-2">Votre evaluation anonyme a bien ete enregistree.</p>
+            <a class="btn btn-ensi" href="{% url 'evaluations:accueil' %}">Retour aux campagnes</a>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

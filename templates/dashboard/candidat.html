@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Mon espace - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="section-title">Mon espace candidat</div>
+        <h1 class="h3 text-ensi mb-0">Bonjour, {{ user.first_name|default:user.email }}</h1>
+    </div>
+    {% if profil.profil_complete %}
+        <a class="btn btn-ensi" href="{% url 'orientation:demarrer' %}">
+            <i class="bi bi-ui-checks-grid me-1"></i>Passer le questionnaire
+        </a>
+    {% endif %}
+</div>
+
+<div class="card mb-4"><div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0">Progression de mon dossier</h2>
+        <span class="fw-bold text-ensi">{{ progression }} %</span>
+    </div>
+    <div class="progress mb-3">
+        <div class="progress-bar fill-success" style="--val:{{ progression }}"></div>
+    </div>
+    <div class="row g-2">
+        <div class="col-md-4">
+            <div class="step-item">
+                <span class="step-dot {% if profil.profil_complete %}done{% else %}todo{% endif %}">
+                    <i class="bi {% if profil.profil_complete %}bi-check-lg{% else %}bi-mortarboard{% endif %}"></i>
+                </span>
+                <div>
+                    <div class="fw-semibold small">Dossier academique</div>
+                    <div class="text-muted-2" style="font-size:.78rem">{{ profil.profil_complete|yesno:'Complet,A completer' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="step-item">
+                <span class="step-dot {% if interets %}done{% else %}todo{% endif %}">
+                    <i class="bi {% if interets %}bi-check-lg{% else %}bi-heart{% endif %}"></i>
+                </span>
+                <div>
+                    <div class="fw-semibold small">Centres d'interet</div>
+                    <div class="text-muted-2" style="font-size:.78rem">{% if interets %}Renseignes{% else %}A renseigner{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="step-item">
+                <span class="step-dot {% if recommandation %}done{% else %}todo{% endif %}">
+                    <i class="bi {% if recommandation %}bi-check-lg{% else %}bi-ui-checks-grid{% endif %}"></i>
+                </span>
+                <div>
+                    <div class="fw-semibold small">Questionnaire</div>
+                    <div class="text-muted-2" style="font-size:.78rem">{% if recommandation %}Termine{% else %}A passer{% endif %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-list-check me-1"></i>Mes demarches</h2>
+            <div class="d-grid gap-2">
+                <a class="btn btn-outline-ensi text-start" href="{% url 'candidats:profil' %}">
+                    <i class="bi bi-mortarboard me-2"></i>Mon dossier academique
+                </a>
+                <a class="btn btn-outline-ensi text-start" href="{% url 'candidats:interets' %}">
+                    <i class="bi bi-heart me-2"></i>Mes centres d'interet
+                </a>
+                {% if profil.profil_complete %}
+                    <a class="btn btn-ensi text-start" href="{% url 'orientation:demarrer' %}">
+                        <i class="bi bi-ui-checks-grid me-2"></i>Passer le questionnaire
+                    </a>
+                {% else %}
+                    <button class="btn btn-ensi text-start" disabled>
+                        <i class="bi bi-lock me-2"></i>Questionnaire (dossier requis)
+                    </button>
+                {% endif %}
+                <a class="btn btn-outline-secondary text-start" href="{% url 'orientation:historique' %}">
+                    <i class="bi bi-clock-history me-2"></i>Historique des tests
+                </a>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3"><i class="bi bi-stars me-1"></i>Dernieres recommandations</h2>
+            {% if recommandation %}
+                {% for ligne in recommandation.lignes.all|slice:':3' %}
+                    <div class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="score-ring ring-sm" style="--val:{{ ligne.score_final }}">
+                            <span>{{ ligne.score_final|floatformat:0 }}%</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">{{ ligne.formation.nom }}</div>
+                            <div class="text-muted-2" style="font-size:.78rem">{{ ligne.formation.domaine }}</div>
+                        </div>
+                        <span class="rank-badge rank-{{ forloop.counter }}">{{ forloop.counter }}</span>
+                    </div>
+                {% endfor %}
+                <a class="btn btn-sm btn-outline-ensi mt-3" href="{% url 'orientation:resultats' recommandation.pk %}">
+                    Voir le detail<i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-clipboard2-data"></i>
+                    Passez le questionnaire pour obtenir vos recommandations.
+                </div>
+            {% endif %}
+        </div></div>
+    </div>
+</div>
+
+<div class="card mt-4"><div class="card-body p-4">
+    <h2 class="h6 text-ensi mb-3"><i class="bi bi-calendar-event me-1"></i>Rendez-vous a venir</h2>
+    {% for rdv in rdvs_a_venir %}
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-calendar-check text-ensi"></i>
+                <span>{{ rdv.date_rendez_vous|date:'d/m/Y H:i' }} — {{ rdv.conseiller.utilisateur.get_full_name }}</span>
+            </div>
+            <span class="badge badge-soft-green">Confirme</span>
+        </div>
+    {% empty %}
+        <div class="empty-state py-3">
+            <i class="bi bi-calendar-x"></i>Aucun rendez-vous prevu.
+        </div>
+    {% endfor %}
+    <div class="mt-3">
+        <a class="btn btn-sm btn-ensi" href="{% url 'conseil:conseillers' %}">
+            <i class="bi bi-plus-lg me-1"></i>Prendre rendez-vous
+        </a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'conseil:mes_rdv' %}">Tous mes rendez-vous</a>
+    </div>
+</div></div>
+{% endblock %}

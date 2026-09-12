@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Verification - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="stat-icon blue mx-auto mb-3"><i class="bi bi-shield-check"></i></div>
+                    <h1 class="h4 text-ensi">{{ campagne.titre }}</h1>
+                    <p class="small text-muted-2 mb-0">
+                        {{ campagne.module }} &mdash; {{ campagne.enseignant }} &mdash; {{ campagne.groupe }}
+                    </p>
+                </div>
+                <div class="alert alert-info small d-flex">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    <span>Votre adresse email est transformee en empreinte anonyme (HMAC) avant
+                    verification. Elle n'est jamais stockee ni reliee a vos reponses.</span>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button class="btn btn-ensi w-100 py-2">
+                        <i class="bi bi-check2-shield me-1"></i>Verifier mon eligibilite
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

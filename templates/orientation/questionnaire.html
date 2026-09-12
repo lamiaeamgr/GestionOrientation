@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Questionnaire d'orientation - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-9">
+    <div class="section-title">Questionnaire v{{ tentative.questionnaire.version }}</div>
+    <h1 class="h3 text-ensi mb-2">{{ tentative.questionnaire.titre }}</h1>
+    <p class="text-muted-2 mb-4">
+        <i class="bi bi-chat-square-text me-1"></i>
+        Repondez spontanement : il n'y a pas de bonne ou de mauvaise reponse.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+            <div class="card mb-3">
+                <div class="card-body p-4">
+                    <h2 class="h6 mb-3">
+                        <span class="badge badge-soft me-2">Q{{ forloop.counter }}</span>{{ question.texte }}
+                    </h2>
+                    {% for option in question.options.all %}
+                        <div class="option-row">
+                            {% if question.type_question == 'choix_multiple' %}
+                                <input class="form-check-input" type="checkbox"
+                                       name="question_{{ question.id }}" value="{{ option.id }}"
+                                       id="opt{{ option.id }}">
+                            {% else %}
+                                <input class="form-check-input" type="radio"
+                                       name="question_{{ question.id }}" value="{{ option.id }}"
+                                       id="opt{{ option.id }}" required>
+                            {% endif %}
+                            <label class="form-check-label flex-grow-1" for="opt{{ option.id }}">{{ option.texte }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+        <button class="btn btn-ensi btn-lg w-100 py-3">
+            <i class="bi bi-check2-circle me-1"></i>Valider mes reponses
+        </button>
+    </form>
+</div>
+</div>
+{% endblock %}

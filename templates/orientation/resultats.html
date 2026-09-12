@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Mes recommandations - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+    <div>
+        <div class="section-title">Resultats du questionnaire</div>
+        <h1 class="h3 text-ensi mb-0">Vos recommandations</h1>
+    </div>
+    <a class="btn btn-ensi" href="{% url 'conseil:conseillers' %}">
+        <i class="bi bi-calendar-check me-1"></i>Prendre rendez-vous
+    </a>
+</div>
+<p class="text-muted-2 mb-4">
+    <i class="bi bi-info-circle me-1"></i>
+    Score = 35 % profil academique + 40 % questionnaire + 25 % centres d'interet.
+</p>
+
+<form method="get" action="{% url 'formations:comparer' %}" id="form-compare">
+{% for ligne in lignes %}
+    <div class="card mb-3 card-lift">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="rank-badge rank-{{ forloop.counter }}">{{ forloop.counter }}</span>
+                <div class="flex-grow-1">
+                    <a href="{% url 'formations:detail' ligne.formation.pk %}" class="fs-5 fw-bold text-ensi text-decoration-none">
+                        {{ ligne.formation.nom }}
+                    </a>
+                    <div>
+                        <span class="badge badge-soft">{{ ligne.formation.domaine }}</span>
+                        <span class="badge bg-light text-dark">{{ ligne.formation.get_niveau_display }}</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="score-ring" style="--val:{{ ligne.score_final }}">
+                        <span>{{ ligne.score_final|floatformat:0 }}%</span>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" name="ids"
+                               value="{{ ligne.formation.id }}" id="cmp{{ ligne.formation.id }}">
+                        <label class="form-check-label small" for="cmp{{ ligne.formation.id }}">Comparer</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted-2"><i class="bi bi-mortarboard me-1"></i>Academique</span>
+                        <strong>{{ ligne.score_academique|floatformat:0 }}%</strong>
+                    </div>
+                    <div class="factor-bar"><i style="--val:{{ ligne.score_academique }}"></i></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted-2"><i class="bi bi-ui-checks-grid me-1"></i>Questionnaire</span>
+                        <strong>{{ ligne.score_questionnaire|floatformat:0 }}%</strong>
+                    </div>
+                    <div class="factor-bar"><i class="fill-accent" style="--val:{{ ligne.score_questionnaire }}"></i></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted-2"><i class="bi bi-heart me-1"></i>Interets</span>
+                        <strong>{{ ligne.score_interets|floatformat:0 }}%</strong>
+                    </div>
+                    <div class="factor-bar"><i class="fill-green" style="--val:{{ ligne.score_interets }}"></i></div>
+                </div>
+            </div>
+
+            {% if ligne.explication %}
+                <details class="explain mt-3">
+                    <summary class="small"><i class="bi bi-lightbulb me-1"></i>Pourquoi cette recommandation ?</summary>
+                    <div class="row small mt-2">
+                        {% for categorie, details in ligne.explication.items %}
+                            <div class="col-md-4">
+                                <strong class="text-ensi">{{ categorie|title }}</strong>
+                                <ul class="mb-0 text-muted-2">
+                                    {% for d in details %}<li>{{ d }}</li>{% empty %}<li>-</li>{% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+<div class="d-flex flex-wrap gap-2 mt-3">
+    <button class="btn btn-accent"><i class="bi bi-layout-split me-1"></i>Comparer la selection</button>
+    <a class="btn btn-outline-secondary" href="{% url 'orientation:historique' %}">Historique</a>
+</div>
+</form>
+{% endblock %}
