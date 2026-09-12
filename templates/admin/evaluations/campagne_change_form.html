@@ -1,0 +1,35 @@
+{% extends 'admin/change_form.html' %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+    {% if original.pk %}
+    <fieldset class="module aligned">
+        <h2>Importer la liste blanche (emails autorises)</h2>
+        <p class="help">
+            Collez les adresses email autorisees, une par ligne. Elles sont converties
+            en empreintes HMAC : les adresses ne sont jamais conservees en clair.
+        </p>
+        <div class="form-row">
+            <textarea name="emails_import" rows="6" style="width:100%"
+                      placeholder="etudiant1@ensi-uma.tn&#10;etudiant2@ensi-uma.tn"></textarea>
+        </div>
+    </fieldset>
+    {% if stats %}
+    <fieldset class="module aligned">
+        <h2>Statistiques agregees</h2>
+        <table style="width:100%">
+            <thead><tr><th style="text-align:left">Critere</th><th>Moyenne /5</th><th>Reponses</th></tr></thead>
+            <tbody>
+                {% for s in stats %}
+                    <tr>
+                        <td>{{ s.question__texte }}</td>
+                        <td>{{ s.moyenne|floatformat:2 }}</td>
+                        <td>{{ s.total }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </fieldset>
+    {% endif %}
+    {% endif %}
+{% endblock %}

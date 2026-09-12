@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Evaluation - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-9">
+    <div class="section-title">Evaluation anonyme</div>
+    <h1 class="h3 text-ensi mb-2">{{ campagne.titre }}</h1>
+    <p class="text-muted-2 mb-4">
+        <i class="bi bi-shield-lock me-1"></i>
+        {{ campagne.module }} &mdash; {{ campagne.enseignant }}. Votre evaluation est totalement anonyme.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+            <div class="card mb-3">
+                <div class="card-body p-4">
+                    <h2 class="h6 mb-3">
+                        <span class="badge badge-soft me-2">{{ forloop.counter }}</span>{{ question.texte }}
+                    </h2>
+                    {% if question.type_question == 'note' %}
+                        <div class="rating-scale">
+                            {% for i in echelle %}
+                                <input type="radio" name="question_{{ question.id }}" value="{{ i }}"
+                                       id="q{{ question.id }}_{{ i }}" required>
+                                <label for="q{{ question.id }}_{{ i }}">{{ i }}</label>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted-2 mt-2" style="max-width:280px">
+                            <span>1 = insuffisant</span><span>5 = excellent</span>
+                        </div>
+                    {% else %}
+                        <textarea class="form-control" name="question_{{ question.id }}" rows="3"
+                                  placeholder="Votre commentaire (facultatif)"></textarea>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        <button class="btn btn-ensi btn-lg w-100 py-3">
+            <i class="bi bi-send me-1"></i>Envoyer mon evaluation anonyme
+        </button>
+    </form>
+</div>
+</div>
+{% endblock %}

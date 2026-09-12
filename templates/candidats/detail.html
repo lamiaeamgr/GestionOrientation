@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Dossier candidat - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="section-title">Dossier candidat</div>
+<h1 class="h3 text-ensi mb-4"><i class="bi bi-person-vcard me-2"></i>{{ profil.utilisateur.get_full_name|default:profil.utilisateur.email }}</h1>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-bold">Profil</div>
+            <div class="card-body">
+                <p><strong>Niveau d'entree :</strong> {{ profil.get_niveau_entree_display|default:'-' }}</p>
+                <p><strong>Ville :</strong> {{ profil.ville|default:'-' }}</p>
+                <p><strong>Profil complet :</strong> {{ profil.profil_complete|yesno:'Oui,Non' }}</p>
+                {% if academique %}
+                    <hr>
+                    <p><strong>Diplome :</strong> {{ academique.get_type_diplome_display|default:academique.type_diplome }}</p>
+                    <p><strong>Specialite :</strong> {{ academique.specialite|default:'-' }}</p>
+                    <p><strong>Etablissement :</strong> {{ academique.etablissement|default:'-' }} ({{ academique.ville_etablissement|default:'-' }})</p>
+                    <p><strong>Annee :</strong> {{ academique.annee_obtention|default:'-' }}</p>
+                    <p><strong>Moyenne generale :</strong> {{ academique.moyenne_generale|default:'-' }}/20</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-bold">Notes et interets</div>
+            <div class="card-body">
+                <h2 class="h6">Notes</h2>
+                <ul class="list-unstyled">
+                    {% for note in notes %}
+                        <li>{{ note.matiere.nom }} : <strong>{{ note.note }}/20</strong></li>
+                    {% empty %}<li class="text-muted">Aucune note.</li>{% endfor %}
+                </ul>
+                <h2 class="h6 mt-3">Centres d'interet</h2>
+                {% for ic in interets %}
+                    <span class="badge bg-secondary">{{ ic.interet.nom }}</span>
+                {% empty %}<span class="text-muted">Aucun.</span>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h5 text-ensi mt-4 mb-3"><i class="bi bi-stars me-1"></i>Resultats d'orientation</h2>
+{% for reco in recommandations %}
+    <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-clock-history me-1"></i>Recommandation du {{ reco.date_creation|date:'d/m/Y H:i' }}</div>
+        <ul class="list-group list-group-flush">
+            {% for ligne in reco.lignes.all|slice:':5' %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ ligne.formation.nom }}</span>
+                    <span class="badge badge-soft">{{ ligne.score_final }} %</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% empty %}
+    <div class="empty-state"><i class="bi bi-clipboard2-data"></i>Aucune recommandation pour le moment.</div>
+{% endfor %}
+{% endblock %}

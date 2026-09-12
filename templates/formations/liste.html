@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Formations - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="section-title">Catalogue</div>
+        <h1 class="h3 text-ensi mb-0">Formations ENSI</h1>
+    </div>
+    <form method="get" class="d-flex gap-2">
+        <select name="domaine" class="form-select" onchange="this.form.submit()">
+            <option value="">Tous les domaines</option>
+            {% for d in domaines %}
+                <option value="{{ d }}" {% if d == domaine_actif %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<form method="get" action="{% url 'formations:comparer' %}">
+<div class="row g-4">
+    {% for formation in formations %}
+        <div class="col-md-4">
+            <div class="card h-100 card-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge badge-soft">{{ formation.get_niveau_display }}</span>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" name="ids" value="{{ formation.id }}" id="cmp{{ formation.id }}">
+                            <label class="form-check-label small" for="cmp{{ formation.id }}">Comparer</label>
+                        </div>
+                    </div>
+                    <h2 class="h5 text-ensi">{{ formation.nom }}</h2>
+                    <p class="mb-2"><span class="badge bg-light text-dark">{{ formation.domaine }}</span>
+                        {% if formation.parcours %}<span class="badge badge-soft-amber">{{ formation.parcours }}</span>{% endif %}
+                    </p>
+                    {% if formation.parent %}
+                        <p class="small text-muted-2 mb-1"><i class="bi bi-diagram-3 me-1"></i>Orientation de : {{ formation.parent.nom }}</p>
+                    {% endif %}
+                    <p class="small text-muted-2 mb-0">{{ formation.description|truncatewords:25 }}</p>
+                </div>
+                <div class="card-footer bg-white border-0 pb-4 px-4">
+                    <a class="btn btn-sm btn-ensi w-100" href="{% url 'formations:detail' formation.pk %}">
+                        Voir les details<i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state"><i class="bi bi-mortarboard"></i>Aucune formation disponible.</div>
+    {% endfor %}
+</div>
+{% if user.is_authenticated %}
+    <button class="btn btn-accent mt-4"><i class="bi bi-layout-split me-1"></i>Comparer la selection</button>
+{% endif %}
+</form>
+{% endblock %}

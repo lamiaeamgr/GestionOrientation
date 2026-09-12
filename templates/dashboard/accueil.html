@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hero p-4 p-md-5 mb-5">
+    <span class="hero-badge mb-3"><i class="bi bi-stars"></i>Plateforme d'orientation ENSI</span>
+    <h1 class="display-5 mt-3">Trouvez la filiere faite pour vous</h1>
+    <p class="lead col-lg-8">
+        Completez votre dossier academique, renseignez vos centres d'interet et passez
+        le questionnaire d'orientation pour obtenir des recommandations explicables.
+    </p>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <a class="btn btn-accent btn-lg" href="{% url 'accounts:register' %}">
+            <i class="bi bi-rocket-takeoff me-1"></i>Commencer mon orientation
+        </a>
+        <a class="btn btn-light-ghost btn-lg" href="{% url 'formations:liste' %}">Decouvrir les formations</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 card-lift"><div class="card-body p-4">
+            <div class="stat-icon blue mb-3"><i class="bi bi-mortarboard"></i></div>
+            <div class="section-title mb-1">Etape 1</div>
+            <h2 class="h5 text-ensi">Dossier academique</h2>
+            <p class="text-muted-2 mb-0">Bac, Bac+2 ou Bac+3 : un formulaire adapte a votre niveau d'entree.</p>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 card-lift"><div class="card-body p-4">
+            <div class="stat-icon amber mb-3"><i class="bi bi-ui-checks-grid"></i></div>
+            <div class="section-title mb-1">Etape 2</div>
+            <h2 class="h5 text-ensi">Questionnaire d'orientation</h2>
+            <p class="text-muted-2 mb-0">Des mises en situation pour identifier vos affinites reelles.</p>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 card-lift"><div class="card-body p-4">
+            <div class="stat-icon green mb-3"><i class="bi bi-calendar-check"></i></div>
+            <div class="section-title mb-1">Etape 3</div>
+            <h2 class="h5 text-ensi">Recommandations &amp; rendez-vous</h2>
+            <p class="text-muted-2 mb-0">Un classement explique, une comparaison des formations et un entretien conseiller.</p>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

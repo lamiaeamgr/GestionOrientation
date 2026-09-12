@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Inscription - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+    <div class="card auth-card">
+        <div class="row g-0">
+            <div class="col-md-5 auth-side p-4 p-md-5 d-flex flex-column justify-content-center">
+                <img src="{% static 'img/ensi-logo.png' %}" alt="ENSI" class="brand-logo mb-4 align-self-start">
+                <h2 class="h4">Votre orientation commence ici</h2>
+                <p class="lead small mb-0">
+                    Creez votre compte candidat pour completer votre dossier,
+                    passer le questionnaire et obtenir vos recommandations.
+                </p>
+            </div>
+            <div class="col-md-7">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h4 text-ensi mb-4">Creer un compte candidat</h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button class="btn btn-ensi w-100 py-2">
+                            <i class="bi bi-person-plus me-1"></i>S'inscrire
+                        </button>
+                    </form>
+                    <p class="mt-4 mb-0 small text-muted-2">
+                        Deja inscrit ?
+                        <a href="{% url 'accounts:login' %}" class="fw-semibold">Se connecter</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

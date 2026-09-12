@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Rendez-vous - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="section-title">Entretien</div>
+<h1 class="h3 text-ensi mb-4"><i class="bi bi-calendar-check me-2"></i>Rendez-vous du {{ rdv.date_rendez_vous|date:'d/m/Y a H:i' }}</h1>
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card mb-3"><div class="card-body">
+            <h2 class="h6 text-ensi">Candidat</h2>
+            <p>
+                <strong>{{ profil.utilisateur.get_full_name|default:profil.utilisateur.email }}</strong><br>
+                Niveau : {{ profil.get_niveau_entree_display|default:'-' }} &mdash; Ville : {{ profil.ville|default:'-' }}
+            </p>
+            <p><strong>Motif :</strong> {{ rdv.motif|default:'-' }}</p>
+            {% if academique %}
+                <p><strong>Diplome :</strong> {{ academique.type_diplome }} &mdash;
+                   <strong>Moyenne :</strong> {{ academique.moyenne_generale|default:'-' }}/20</p>
+            {% endif %}
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'candidats:detail' profil.pk %}">Dossier complet</a>
+        </div></div>
+        {% if recommandation %}
+            <div class="card"><div class="card-body">
+                <h2 class="h6 text-ensi">Dernieres recommandations</h2>
+                <ul class="list-unstyled mb-0">
+                    {% for ligne in recommandation.lignes.all|slice:':5' %}
+                        <li>{{ ligne.formation.nom }} — <strong>{{ ligne.score_final }} %</strong></li>
+                    {% endfor %}
+                </ul>
+            </div></div>
+        {% endif %}
+    </div>
+    <div class="col-md-5">
+        <div class="card"><div class="card-body">
+            <h2 class="h6 text-ensi">Note / recommandation apres entretien</h2>
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                {% endfor %}
+                <button class="btn btn-ensi">Enregistrer</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

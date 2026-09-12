@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Conseillers - ENSI Orientation{% endblock %}
+{% block content %}
+<div class="section-title">Accompagnement</div>
+<h1 class="h3 text-ensi mb-4">Prendre rendez-vous avec un conseiller</h1>
+<div class="row g-4">
+    {% for d in donnees %}
+        <div class="col-md-6">
+            <div class="card h-100 card-lift">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar">{{ d.conseiller.utilisateur.first_name|first|upper }}{{ d.conseiller.utilisateur.last_name|first|upper }}</div>
+                        <div>
+                            <h2 class="h5 text-ensi mb-0">{{ d.conseiller.utilisateur.get_full_name|default:d.conseiller.utilisateur.email }}</h2>
+                            <span class="badge badge-soft">{{ d.conseiller.specialite|default:'Orientation generale' }}</span>
+                        </div>
+                    </div>
+                    <p class="small text-muted-2">{{ d.conseiller.biographie|truncatewords:30 }}</p>
+                    <div class="section-title mt-3 mb-2">Creneaux disponibles</div>
+                    {% if d.creneaux %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for c in d.creneaux %}
+                                <a class="slot-chip" href="{% url 'conseil:reserver' c.id %}">
+                                    <i class="bi bi-clock me-1"></i>{{ c.date_heure_debut|date:'d/m H:i' }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state py-2"><i class="bi bi-calendar-x"></i>Aucun creneau disponible.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state"><i class="bi bi-people"></i>Aucun conseiller n'est encore enregistre.</div>
+    {% endfor %}
+</div>
+{% endblock %}
