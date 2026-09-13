@@ -40,12 +40,45 @@ class ProfilCandidat(models.Model):
     utilisateur = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profil_candidat'
     )
+    class Objectif(models.TextChoices):
+        PUBLIC = 'public', "Secteur public / ecole reconnue par l'Etat"
+        PRIVE = 'prive', 'Secteur prive (etudes ou emploi)'
+
     niveau_entree = models.CharField(
         max_length=10, choices=NiveauEntree.choices, blank=True
+    )
+    objectif = models.CharField(
+        'projet',
+        max_length=30,
+        choices=Objectif.choices,
+        blank=True,
+        help_text=(
+            "Public / ecole reconnue : formations reconnues par l'Etat. "
+            "Prive : les formations accreditees sont aussi proposees."
+        ),
     )
     ville = models.CharField(max_length=100, blank=True)
     date_naissance = models.DateField(null=True, blank=True)
     profil_complete = models.BooleanField(default=False)
+
+    ANCIENS_OBJECTIFS_PUBLICS = (
+        'public', 'universite_publique', 'emploi_public', 'ecole_reconnue',
+    )
+    ANCIENS_OBJECTIFS_PRIVES = (
+        'prive', 'etudes_privees', 'emploi_prive',
+    )
+
+    @property
+    def vise_diplome_reconnu(self):
+        return self.objectif in self.ANCIENS_OBJECTIFS_PUBLICS
+
+    @property
+    def vise_secteur_prive(self):
+        return self.objectif in self.ANCIENS_OBJECTIFS_PRIVES
+
+    @property
+    def vise_secteur_public(self):
+        return self.vise_diplome_reconnu
 
     class Meta:
         verbose_name = 'profil candidat'
@@ -58,28 +91,34 @@ class ProfilAcademique(models.Model):
     """Dossier academique du candidat ; les champs utiles dependent du niveau d'entree."""
 
     class TypeDiplomeBac(models.TextChoices):
-        MATH = 'math', 'Bac Mathematiques'
-        SCIENCES = 'sciences', 'Bac Sciences experimentales'
-        TECHNIQUE = 'technique', 'Bac Sciences techniques'
-        INFO = 'informatique', 'Bac Informatique'
-        ECO = 'eco', 'Bac Economie et Gestion'
-        LETTRES = 'lettres', 'Bac Lettres'
-        SPORT = 'sport', 'Bac Sport'
-        AUTRE = 'autre', 'Autre'
+        SMA = 'sma', 'Sciences Math A'
+        SMB = 'smb', 'Sciences Math B'
+        PC = 'pc', 'Sciences Physiques'
+        SVT = 'svt', 'Sciences de la Vie et de la Terre'
+        STE = 'ste', 'Sciences et Technologies Electriques'
+        STM = 'stm', 'Sciences et Technologies Mecaniques'
+        ECO = 'eco', 'Sciences Economiques'
+        SGC = 'sgc', 'Sciences de Gestion Comptable'
+        LETTRES = 'lettres', 'Lettres'
+        SH = 'sh', 'Sciences Humaines'
+        ARTS = 'arts', 'Arts Appliques'
+        SPORT = 'sport', 'Education Physique'
+        AGRO = 'agro', 'Sciences Agronomiques'
 
     class TypeDiplomeBac2(models.TextChoices):
+        FSJES = 'fsjes', 'FSJES'
+        FST = 'fst', 'FST'
         BTS = 'bts', 'BTS'
-        DUT = 'dut', 'DUT'
-        DEUG = 'deug', 'DEUG'
-        DEUST = 'deust', 'DEUST'
+        DUT = 'dut', 'DUT / DEUST'
         CPGE = 'cpge', 'CPGE'
-        AUTRE = 'autre', 'Autre'
+        EST = 'est', 'EST'
+        OFPPT = 'ofppt', 'OFPPT / Technicien specialise'
 
     class TypeDiplomeBac3(models.TextChoices):
-        LICENCE = 'licence', 'Licence'
-        BACHELOR = 'bachelor', 'Bachelor'
+        FSJES = 'fsjes', 'Licence FSJES'
+        FST = 'fst', 'Licence FST / sciences'
         LICENCE_PRO = 'licence_pro', 'Licence professionnelle'
-        AUTRE = 'autre', 'Autre'
+        BACHELOR = 'bachelor', 'Bachelor'
 
     profil = models.OneToOneField(
         ProfilCandidat, on_delete=models.CASCADE, related_name='academique'

@@ -1,0 +1,38 @@
+{% extends 'administration/base.html' %}
+{% block title %}Groupes{% endblock %}
+{% block admin %}
+<div class="d-flex justify-content-between mb-4">
+    <div>
+        <div class="section-title">Referentiel</div>
+        <h1 class="h3 text-ensi mb-0">Groupes d'etudiants</h1>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'administration:campagnes' %}">Retour aux campagnes</a>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="row g-3">
+            {% for g in groupes %}
+                <div class="col-md-6">
+                    <div class="card admin-item">
+                        <div class="card-body p-4">
+                            <span class="section-title">{{ g.annee_universitaire }}</span>
+                            <h2 class="h6 text-ensi mb-0">{{ g.nom }}</h2>
+                            <div class="admin-item-actions">
+                                <form method="post" action="{% url 'administration:groupe_supprimer' g.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Supprimer</button></form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12"><div class="empty-state"><i class="bi bi-people"></i>Aucun groupe.</div></div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Ajouter</h2>
+            <form method="post">{% csrf_token %}{% include 'includes/form_fields.html' %}<button class="btn btn-ensi">Enregistrer</button></form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

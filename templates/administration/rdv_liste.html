@@ -1,0 +1,35 @@
+{% extends 'administration/base.html' %}
+{% block title %}Rendez-vous{% endblock %}
+{% block admin %}
+<div class="mb-4">
+    <div class="section-title">Suivi</div>
+    <h1 class="h3 text-ensi mb-0">Rendez-vous</h1>
+</div>
+<div class="row g-3">
+    {% for r in rdvs %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card admin-item">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-2 mb-2">
+                        <span class="section-title mb-0">{{ r.date_rendez_vous|date:'d/m/Y H:i' }}</span>
+                        <span class="badge text-bg-light">{{ r.get_statut_display }}</span>
+                    </div>
+                    <h2 class="h6 text-ensi mb-1">{{ r.candidat.utilisateur.get_full_name|default:r.candidat.utilisateur.email }}</h2>
+                    <p class="small text-muted mb-0">avec {{ r.conseiller.utilisateur.get_full_name }}</p>
+                    <div class="admin-item-actions">
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:candidat_detail' r.candidat_id %}">Dossier</a>
+                        {% if r.statut == 'confirme' %}
+                            <form method="post" action="{% url 'administration:rdv_annuler' r.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger">Annuler</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="empty-state"><i class="bi bi-calendar-x"></i>Aucun rendez-vous.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

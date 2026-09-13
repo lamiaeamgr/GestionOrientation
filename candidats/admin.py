@@ -27,8 +27,8 @@ class ProfilAcademiqueInline(admin.StackedInline):
 
 @admin.register(ProfilCandidat)
 class ProfilCandidatAdmin(admin.ModelAdmin):
-    list_display = ('utilisateur', 'niveau_entree', 'ville', 'profil_complete')
-    list_filter = ('niveau_entree', 'profil_complete')
+    list_display = ('utilisateur', 'niveau_entree', 'objectif', 'ville', 'profil_complete')
+    list_filter = ('niveau_entree', 'objectif', 'profil_complete')
     search_fields = ('utilisateur__email', 'utilisateur__first_name', 'utilisateur__last_name')
     inlines = [ProfilAcademiqueInline, InteretCandidatInline]
 

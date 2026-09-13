@@ -4,6 +4,10 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from accounts.decorators import conseiller_requis
+
+from candidats.models import ProfilCandidat
+
 from .forms import DisponibiliteForm, NoteConseillerForm, ReservationForm
 from .models import DisponibiliteConseiller, ProfilConseiller, RendezVous
 
@@ -93,13 +97,12 @@ def annuler_rdv(request, pk):
         request.user.est_conseiller
         and rdv.conseiller.utilisateur_id == request.user.id
     )
-    if not (est_proprietaire or est_conseiller or request.user.est_admin):
+    if not (est_proprietaire or est_conseiller):
         messages.error(request, 'Acces non autorise.')
         return redirect('dashboard:home')
     if request.method == 'POST':
         rdv.statut = RendezVous.Statut.ANNULE
         rdv.save(update_fields=['statut'])
-        # Le creneau redevient reservable
         if rdv.disponibilite_id:
             rdv.disponibilite = None
             rdv.save(update_fields=['disponibilite'])
@@ -116,7 +119,7 @@ def _conseiller(request):
     return profil
 
 
-@login_required
+@conseiller_requis
 def espace(request):
     conseiller = _conseiller(request)
     if conseiller is None:
@@ -132,7 +135,7 @@ def espace(request):
     })
 
 
-@login_required
+@conseiller_requis
 def disponibilites(request):
     conseiller = _conseiller(request)
     if conseiller is None:
@@ -154,7 +157,7 @@ def disponibilites(request):
     })
 
 
-@login_required
+@conseiller_requis
 def supprimer_disponibilite(request, pk):
     conseiller = _conseiller(request)
     if conseiller is None:
@@ -170,7 +173,7 @@ def supprimer_disponibilite(request, pk):
     return redirect('conseil:disponibilites')
 
 
-@login_required
+@conseiller_requis
 def rdv_detail(request, pk):
     """Fiche rendez-vous cote conseiller : dossier candidat + note."""
     conseiller = _conseiller(request)
@@ -200,4 +203,30 @@ def rdv_detail(request, pk):
         'profil': profil_cand,
         'academique': academique,
         'recommandation': recommandation,
+    })
+
+
+@conseiller_requis
+def dossier_candidat(request, pk):
+    """Dossier academique dans l'espace conseiller (session isolee)."""
+    conseiller = _conseiller(request)
+    if conseiller is None:
+        return redirect('accounts:login_conseiller')
+    profil_cand = get_object_or_404(
+        ProfilCandidat.objects.select_related('utilisateur'), pk=pk
+    )
+    if not conseiller.rendez_vous.filter(candidat=profil_cand).exists():
+        messages.error(request, 'Acces non autorise a ce dossier.')
+        return redirect('conseil:espace')
+    academique = getattr(profil_cand, 'academique', None)
+    notes = academique.notes.select_related('matiere') if academique else []
+    interets = profil_cand.interets.select_related('interet')
+    recommandations = profil_cand.recommandations.prefetch_related('lignes__formation')
+    return render(request, 'candidats/detail.html', {
+        'profil': profil_cand,
+        'academique': academique,
+        'notes': notes,
+        'interets': interets,
+        'recommandations': recommandations,
+        'retour_conseiller': True,
     })

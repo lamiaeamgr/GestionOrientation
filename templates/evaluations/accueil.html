@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Evaluation des enseignants - ENSI Orientation{% endblock %}
 {% block content %}
+<div class="card mb-4">
+    <img class="card-banner" src="{% static 'img/campus-event.jpg' %}" alt="Campus ENSI">
+</div>
 <div class="section-title">Espace etudiants</div>
 <h1 class="h3 text-ensi mb-2">Evaluation anonyme des enseignants</h1>
 <div class="alert alert-info d-flex align-items-center mb-4">

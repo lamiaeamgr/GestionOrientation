@@ -10,22 +10,35 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4(n*5j&-gul(rwichz-fty9b&j-3-co&rn$+ndl%4i_%)65wkp'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-dev-only-change-me',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        'ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver'
+    ).split(',')
+    if h.strip()
+]
 
 
 # Application definition
@@ -44,11 +57,12 @@ INSTALLED_APPS = [
     'conseil',
     'evaluations',
     'dashboard',
+    'administration',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'accounts.middleware.WorkspaceSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -68,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.workspace',
             ],
         },
     },
@@ -123,6 +138,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -137,9 +154,14 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 
 # Cle serveur utilisee pour pseudonymiser les emails des evaluateurs (HMAC).
 # En production, la definir via une variable d'environnement distincte de SECRET_KEY.
-EVALUATION_HMAC_KEY = 'ensi-evaluation-hmac-key-dev'
+EVALUATION_HMAC_KEY = os.environ.get(
+    'EVALUATION_HMAC_KEY', 'ensi-evaluation-hmac-key-dev'
+)
 
 # Pondérations du moteur de recommandation (en %)
 POIDS_SCORE_ACADEMIQUE = 35
 POIDS_SCORE_QUESTIONNAIRE = 40
 POIDS_SCORE_INTERETS = 25
+
+# Conseiller IA (Groq). Laisser vide pour desactiver.
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')

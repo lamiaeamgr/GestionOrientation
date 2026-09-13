@@ -1,0 +1,30 @@
+{% extends 'administration/base.html' %}
+{% block title %}Conseillers{% endblock %}
+{% block admin %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="section-title">Accompagnement</div>
+        <h1 class="h3 text-ensi mb-0">Conseillers</h1>
+    </div>
+    <a class="btn btn-ensi" href="{% url 'administration:conseiller_creer' %}">Nouveau conseiller</a>
+</div>
+<div class="row g-3">
+    {% for c in conseillers %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card admin-item">
+                <div class="card-body p-4">
+                    <h2 class="h5 text-ensi mb-1">{{ c.utilisateur.get_full_name|default:c.utilisateur.email }}</h2>
+                    <p class="small text-muted mb-1">{{ c.utilisateur.email }}</p>
+                    <p class="small text-muted mb-0">{{ c.specialite|default:'Domaine non renseigne' }} · {{ c.nb_rdv }} RDV</p>
+                    <div class="admin-item-actions">
+                        <a class="btn btn-sm btn-ensi" href="{% url 'administration:conseiller_modifier' c.pk %}">Modifier</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:rdv' %}">Voir les RDV</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="empty-state"><i class="bi bi-person-badge"></i>Aucun conseiller.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

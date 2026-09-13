@@ -2,15 +2,14 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import VerificationEmailForm
+from .forms import ReponseCampagneForm, VerificationEmailForm
 from .models import (
     CampagneEvaluation,
     EvaluateurAutorise,
-    QuestionEvaluation,
     ReponseEvaluation,
     ReponseQuestionEvaluation,
 )
-from .utils import empreinte_email
+from .utils import email_est_personnel, empreinte_email
 
 SESSION_CLE = 'evaluation_eligible'  # {campagne_id: identifiant_anonyme}
 
@@ -39,7 +38,16 @@ def verifier(request, campagne_id):
     if request.method == 'POST':
         form = VerificationEmailForm(request.POST)
         if form.is_valid():
-            empreinte = empreinte_email(form.cleaned_data['email'])
+            email = form.cleaned_data['email']
+            if email_est_personnel(email):
+                messages.error(
+                    request,
+                    "Les comptes d'administration et de conseil ne peuvent pas evaluer.",
+                )
+                return render(request, 'evaluations/verifier.html', {
+                    'campagne': campagne, 'form': form,
+                })
+            empreinte = empreinte_email(email)
             if not EvaluateurAutorise.objects.filter(
                 campagne=campagne, identifiant_anonyme=empreinte
             ).exists():
@@ -82,21 +90,8 @@ def repondre(request, campagne_id):
     questions = list(campagne.questions.all())
 
     if request.method == 'POST':
-        valide = True
-        details = []
-        for question in questions:
-            if question.type_question == QuestionEvaluation.TypeQuestion.NOTE:
-                valeur = request.POST.get(f'question_{question.id}')
-                if not valeur or not valeur.isdigit() or not (1 <= int(valeur) <= 5):
-                    valide = False
-                    break
-                details.append((question, int(valeur), ''))
-            else:
-                texte = request.POST.get(f'question_{question.id}', '').strip()
-                details.append((question, None, texte))
-        if not valide:
-            messages.error(request, 'Veuillez attribuer une note de 1 a 5 a chaque critere.')
-        else:
+        form = ReponseCampagneForm(request.POST, questions=questions)
+        if form.is_valid():
             try:
                 with transaction.atomic():
                     reponse = ReponseEvaluation.objects.create(
@@ -106,21 +101,24 @@ def repondre(request, campagne_id):
                         ReponseQuestionEvaluation(
                             reponse=reponse, question=q, note=n, reponse_texte=t
                         )
-                        for q, n, t in details
+                        for q, n, t in form.details()
                     ])
             except IntegrityError:
                 messages.warning(
                     request, 'Une reponse a deja ete soumise pour cette campagne.'
                 )
                 return redirect('evaluations:accueil')
-            # On retire l'autorisation de la session
             eligibles = request.session.get(SESSION_CLE, {})
             eligibles.pop(str(campagne.id), None)
             request.session[SESSION_CLE] = eligibles
             return render(request, 'evaluations/remerciement.html', {'campagne': campagne})
+        messages.error(request, 'Veuillez attribuer une note de 1 a 5 a chaque critere.')
+    else:
+        form = ReponseCampagneForm(questions=questions)
 
     return render(request, 'evaluations/repondre.html', {
         'campagne': campagne,
         'questions': questions,
+        'form': form,
         'echelle': range(1, 6),
     })

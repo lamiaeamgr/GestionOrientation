@@ -10,6 +10,7 @@ from django.conf import settings
 from candidats.models import CentreInteret
 from formations.models import Formation
 
+from .ai import generer_avis_ia
 from .models import (
     PonderationOptionFormation,
     Recommandation,
@@ -192,6 +193,10 @@ def generer_recommandation(profil, tentative):
     formations = Formation.objects.filter(est_active=True).prefetch_related(
         'matieres_importantes', 'prerequis__matiere'
     )
+    if profil.vise_diplome_reconnu:
+        formations = formations.filter(
+            reconnaissance=Formation.Reconnaissance.RECONNUE
+        )
     for formation in formations:
         s_acad, d_acad = score_academique(profil, formation)
         s_int, d_int = score_interets(profil, formation)
@@ -211,4 +216,9 @@ def generer_recommandation(profil, tentative):
                 'questionnaire': d_quest,
             },
         )
+    lignes = list(recommandation.lignes.select_related('formation'))
+    avis = generer_avis_ia(profil, lignes)
+    if avis:
+        recommandation.avis_ia = avis
+        recommandation.save(update_fields=['avis_ia'])
     return recommandation

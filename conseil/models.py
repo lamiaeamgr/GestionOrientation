@@ -30,6 +30,12 @@ class DisponibiliteConseiller(models.Model):
     class Meta:
         verbose_name = 'disponibilite conseiller'
         ordering = ['date_heure_debut']
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(date_heure_fin__gt=models.F('date_heure_debut')),
+                name='conseil_dispo_fin_apres_debut',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.conseiller} : {self.date_heure_debut:%d/%m/%Y %H:%M}'

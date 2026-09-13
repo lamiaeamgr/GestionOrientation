@@ -1,0 +1,32 @@
+{% extends 'administration/base.html' %}
+{% block title %}Candidats{% endblock %}
+{% block admin %}
+<div class="mb-4">
+    <div class="section-title">Dossiers</div>
+    <h1 class="h3 text-ensi mb-0">Candidats</h1>
+</div>
+<div class="row g-3">
+    {% for c in candidats %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card admin-item">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-2 mb-2">
+                        <span class="section-title mb-0">{{ c.get_niveau_entree_display|default:'Nouveau' }}</span>
+                        {% if not c.utilisateur.is_active %}<span class="badge text-bg-secondary">Suspendu</span>
+                        {% elif c.profil_complete %}<span class="badge text-bg-success">Profil complet</span>
+                        {% else %}<span class="badge text-bg-warning">Incomplet</span>{% endif %}
+                    </div>
+                    <h2 class="h5 text-ensi mb-1">{{ c.utilisateur.get_full_name|default:c.utilisateur.email }}</h2>
+                    <p class="small text-muted mb-1">{{ c.utilisateur.email }}</p>
+                    <p class="small text-muted mb-0">{{ c.nb_tentatives }} test(s) · {{ c.nb_rdv }} RDV</p>
+                    <div class="admin-item-actions">
+                        <a class="btn btn-sm btn-ensi" href="{% url 'administration:candidat_detail' c.pk %}">Ouvrir le dossier</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="empty-state"><i class="bi bi-people"></i>Aucun candidat.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

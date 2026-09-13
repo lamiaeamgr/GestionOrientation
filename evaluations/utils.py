@@ -24,3 +24,23 @@ def empreinte_email(email):
         normaliser_email(email).encode('utf-8'),
         hashlib.sha256,
     ).hexdigest()
+
+
+DOMAINES_ENSI = ('ensi.ma', 'ensit.ma', 'ensi-uma.tn')
+
+
+def email_est_ensi(email):
+    domaine = normaliser_email(email).rsplit('@', 1)[-1]
+    return domaine in DOMAINES_ENSI
+
+
+def email_est_personnel(email):
+    """Un admin ou un conseiller ne peut jamais evaluer un enseignant."""
+    from accounts.models import Utilisateur
+
+    utilisateur = Utilisateur.objects.filter(
+        email__iexact=normaliser_email(email)
+    ).first()
+    if utilisateur is None:
+        return False
+    return utilisateur.est_admin or utilisateur.est_conseiller

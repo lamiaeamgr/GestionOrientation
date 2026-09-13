@@ -8,12 +8,24 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from datetime import date
+
+from accounts.demo import COMPTES_DEMO
 from accounts.models import Utilisateur
-from candidats.models import CentreInteret, Matiere
+from candidats.catalogues import toutes_matieres
+from candidats.models import (
+    CentreInteret,
+    InteretCandidat,
+    Matiere,
+    NoteAcademique,
+    ProfilAcademique,
+    ProfilCandidat,
+)
 from conseil.models import DisponibiliteConseiller, ProfilConseiller
 from evaluations.models import (
     CampagneEvaluation,
     Enseignant,
+    EtudiantInterne,
     EvaluateurAutorise,
     GroupeEtudiant,
     Module,
@@ -38,17 +50,16 @@ class Command(BaseCommand):
         formations = self._formations()
         self._questionnaire(formations)
         self._conseiller()
+        self._admin()
+        self._candidat()
         self._campagne()
+        self._etudiants()
         self.stdout.write(self.style.SUCCESS('Donnees de demonstration creees.'))
 
     # ------------------------------------------------------------------
     def _matieres(self):
         self.matieres = {}
-        for nom in [
-            'Mathematiques', 'Physique', 'Informatique', 'SVT',
-            'Francais', 'Anglais', 'Sciences techniques', 'Economie',
-            'Gestion', 'Algorithmique', 'Statistiques', 'Mecanique',
-        ]:
+        for nom in toutes_matieres():
             self.matieres[nom], _ = Matiere.objects.get_or_create(nom=nom)
 
     def _interets(self):
@@ -189,6 +200,13 @@ class Command(BaseCommand):
         )
         master.matieres_importantes.set([m['Statistiques'], m['Informatique'], m['Mathematiques']])
 
+        Formation.objects.filter(
+            nom__in=['Licence Informatique', 'Master Data Science']
+        ).update(reconnaissance=Formation.Reconnaissance.ACCREDITEE)
+        Formation.objects.exclude(
+            nom__in=['Licence Informatique', 'Master Data Science']
+        ).update(reconnaissance=Formation.Reconnaissance.RECONNUE)
+
         return {
             'gi': gi, 'gc': gc, 'gind': gind,
             'web': enfants[0], 'cyber': enfants[1], 'data': enfants[2],
@@ -276,17 +294,94 @@ class Command(BaseCommand):
             ],
         )
 
-    def _conseiller(self):
+    def _admin(self):
+        demo = COMPTES_DEMO['admin']
         user, created = Utilisateur.objects.get_or_create(
-            email='conseiller@ensi-uma.tn',
+            email=demo.email,
             defaults={
-                'first_name': 'Sami', 'last_name': 'Ben Ali',
+                'first_name': demo.first_name,
+                'last_name': demo.last_name,
+                'role': Utilisateur.Role.ADMIN,
+                'is_staff': False,
+                'is_superuser': False,
+            },
+        )
+        user.role = Utilisateur.Role.ADMIN
+        user.is_staff = False
+        user.is_superuser = False
+        user.set_password(demo.password)
+        user.save()
+        if created:
+            self.stdout.write(f'Compte admin cree : {demo.email}')
+
+    def _candidat(self):
+        demo = COMPTES_DEMO['candidat']
+        user, created = Utilisateur.objects.get_or_create(
+            email=demo.email,
+            defaults={
+                'first_name': demo.first_name,
+                'last_name': demo.last_name,
+                'role': Utilisateur.Role.CANDIDAT,
+            },
+        )
+        user.role = Utilisateur.Role.CANDIDAT
+        user.set_password(demo.password)
+        user.save()
+        profil, _ = ProfilCandidat.objects.get_or_create(
+            utilisateur=user,
+            defaults={
+                'niveau_entree': ProfilCandidat.NiveauEntree.BAC,
+                'objectif': ProfilCandidat.Objectif.PUBLIC,
+                'ville': 'Tanger',
+                'date_naissance': date(2006, 3, 15),
+                'profil_complete': True,
+            },
+        )
+        academique, _ = ProfilAcademique.objects.get_or_create(
+            profil=profil,
+            defaults={
+                'type_diplome': 'sma',
+                'etablissement': 'Lycee Ibn Battouta',
+                'ville_etablissement': 'Tanger',
+                'annee_obtention': 2026,
+                'moyenne_generale': 16.5,
+            },
+        )
+        notes = {
+            'Mathematiques': 17,
+            'Physique': 16,
+            'Informatique': 18,
+        }
+        for nom, valeur in notes.items():
+            matiere = self.matieres.get(nom) or Matiere.objects.filter(nom=nom).first()
+            if matiere is None:
+                continue
+            NoteAcademique.objects.get_or_create(
+                academique=academique,
+                matiere=matiere,
+                defaults={'note': valeur},
+            )
+        for nom in ('Programmation', 'Intelligence artificielle', 'Analyser'):
+            interet = CentreInteret.objects.filter(nom=nom).first()
+            if interet is None:
+                continue
+            InteretCandidat.objects.get_or_create(profil=profil, interet=interet)
+        if created:
+            self.stdout.write(f'Compte candidat cree : {demo.email}')
+
+    def _conseiller(self):
+        demo = COMPTES_DEMO['conseiller']
+        user, created = Utilisateur.objects.get_or_create(
+            email=demo.email,
+            defaults={
+                'first_name': demo.first_name,
+                'last_name': demo.last_name,
                 'role': Utilisateur.Role.CONSEILLER,
             },
         )
-        if created:
-            user.set_password('conseiller123')
-            user.save()
+        user.role = Utilisateur.Role.CONSEILLER
+        user.set_password(demo.password)
+        user.save()
         conseiller, _ = ProfilConseiller.objects.get_or_create(
             utilisateur=user,
             defaults={
@@ -311,8 +406,13 @@ class Command(BaseCommand):
             code='ALGO1', defaults={'nom': 'Algorithmique et structures de donnees'}
         )
         groupe, _ = GroupeEtudiant.objects.get_or_create(
-            nom='GI1-A', annee_universitaire='2025-2026'
+            nom='GI1-A',
+            annee_universitaire='2025-2026',
+            defaults={'filiere': 'Genie Informatique'},
         )
+        if not groupe.filiere:
+            groupe.filiere = 'Genie Informatique'
+            groupe.save(update_fields=['filiere'])
         campagne, created = CampagneEvaluation.objects.get_or_create(
             titre='Evaluation fin de module ALGO1',
             defaults={
@@ -345,4 +445,38 @@ class Command(BaseCommand):
         for email in ['etudiant1@ensi-uma.tn', 'etudiant2@ensi-uma.tn', 'etudiant3@ensi-uma.tn']:
             EvaluateurAutorise.objects.get_or_create(
                 campagne=campagne, identifiant_anonyme=empreinte_email(email)
+            )
+
+    def _etudiants(self):
+        gi, _ = GroupeEtudiant.objects.get_or_create(
+            nom='GI1-A',
+            annee_universitaire='2025-2026',
+            defaults={'filiere': 'Genie Informatique'},
+        )
+        gc, _ = GroupeEtudiant.objects.get_or_create(
+            nom='GC1-B',
+            annee_universitaire='2025-2026',
+            defaults={'filiere': 'Genie Civil'},
+        )
+        if not gi.filiere:
+            gi.filiere = 'Genie Informatique'
+            gi.save(update_fields=['filiere'])
+        if not gc.filiere:
+            gc.filiere = 'Genie Civil'
+            gc.save(update_fields=['filiere'])
+        internes = [
+            ('Youssef', 'El Amrani', 'etudiant1@ensi-uma.tn', 'Genie Informatique', gi),
+            ('Sara', 'Benjelloun', 'etudiant2@ensi-uma.tn', 'Genie Informatique', gi),
+            ('Omar', 'Khattabi', 'etudiant3@ensi-uma.tn', 'Genie Informatique', gi),
+            ('Imane', 'Tazi', 'imane.tazi@ensi.ma', 'Genie Informatique', gi),
+            ('Karim', 'Bennani', 'karim.bennani@ensi.ma', 'Genie Civil', gc),
+            ('Nadia', 'Chraibi', 'nadia.chraibi@ensi.ma', 'Genie Civil', gc),
+        ]
+        for prenom, nom, email, filiere, groupe in internes:
+            EtudiantInterne.objects.get_or_create(
+                email=email,
+                defaults={
+                    'prenom': prenom, 'nom': nom,
+                    'filiere': filiere, 'groupe': groupe,
+                },
             )

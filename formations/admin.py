@@ -10,8 +10,8 @@ class PrerequisInline(admin.TabularInline):
 
 @admin.register(Formation)
 class FormationAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'domaine', 'niveau', 'parcours', 'parent', 'est_active')
-    list_filter = ('niveau', 'domaine', 'est_active')
+    list_display = ('nom', 'domaine', 'niveau', 'reconnaissance', 'parcours', 'parent', 'est_active')
+    list_filter = ('niveau', 'domaine', 'reconnaissance', 'est_active')
     search_fields = ('nom', 'domaine')
     filter_horizontal = ('matieres_importantes',)
     inlines = [PrerequisInline]

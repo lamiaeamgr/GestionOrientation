@@ -1,0 +1,39 @@
+{% extends 'administration/base.html' %}
+{% block title %}Questionnaires{% endblock %}
+{% block admin %}
+<div class="mb-4">
+    <div class="section-title">Orientation</div>
+    <h1 class="h3 text-ensi mb-0">Questionnaires, questions et ponderations</h1>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="row g-3">
+            {% for q in questionnaires %}
+                <div class="col-md-6">
+                    <div class="card admin-item">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between gap-2 mb-2">
+                                <span class="section-title mb-0">Version {{ q.version }}</span>
+                                {% if q.est_actif %}<span class="badge text-bg-success">Actif</span>{% else %}<span class="badge text-bg-secondary">Inactif</span>{% endif %}
+                            </div>
+                            <h2 class="h5 text-ensi mb-1">{{ q.titre }}</h2>
+                            <p class="small text-muted mb-0">{{ q.nb_questions }} question(s)</p>
+                            <div class="admin-item-actions">
+                                <a class="btn btn-sm btn-ensi" href="{% url 'administration:questionnaire_detail' q.pk %}">Gerer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12"><div class="empty-state"><i class="bi bi-ui-checks"></i>Aucun questionnaire.</div></div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Nouveau questionnaire</h2>
+            <form method="post">{% csrf_token %}{% include 'includes/form_fields.html' %}<button class="btn btn-ensi">Creer</button></form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

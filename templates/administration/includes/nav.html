@@ -1,0 +1,9 @@
+<nav class="admin-subnav mb-4">
+    <a href="{% url 'administration:accueil' %}" class="{% if request.resolver_match.url_name == 'accueil' %}active{% endif %}">Pilotage</a>
+    <a href="{% url 'administration:formations' %}" class="{% if 'formation' in request.resolver_match.url_name %}active{% endif %}">Formations</a>
+    <a href="{% url 'administration:campagnes' %}" class="{% if 'campagne' in request.resolver_match.url_name or request.resolver_match.url_name == 'enseignants' or request.resolver_match.url_name == 'modules' or request.resolver_match.url_name == 'groupes' %}active{% endif %}">Evaluations</a>
+    <a href="{% url 'administration:candidats' %}" class="{% if 'candidat' in request.resolver_match.url_name %}active{% endif %}">Candidats</a>
+    <a href="{% url 'administration:questionnaires' %}" class="{% if 'question' in request.resolver_match.url_name or 'option' in request.resolver_match.url_name or 'ponderation' in request.resolver_match.url_name %}active{% endif %}">Questionnaire</a>
+    <a href="{% url 'administration:conseillers' %}" class="{% if 'conseiller' in request.resolver_match.url_name %}active{% endif %}">Conseillers</a>
+    <a href="{% url 'administration:rdv' %}" class="{% if request.resolver_match.url_name == 'rdv' %}active{% endif %}">Rendez-vous</a>
+</nav>

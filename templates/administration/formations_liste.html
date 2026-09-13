@@ -1,0 +1,39 @@
+{% extends 'administration/base.html' %}
+{% load dict_extras %}
+{% block title %}Formations - Administration{% endblock %}
+{% block admin %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="section-title">Catalogue</div>
+        <h1 class="h3 text-ensi mb-0">Formations et parcours</h1>
+    </div>
+    <a class="btn btn-ensi" href="{% url 'administration:formation_creer' %}">
+        <i class="bi bi-plus-lg me-1"></i>Nouvelle formation
+    </a>
+</div>
+<div class="row g-3">
+    {% for f in formations %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card admin-item">
+                <img class="card-cover" src="{% formation_cover f %}" alt="{{ f.nom }}">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-2 mb-2">
+                        <span class="section-title mb-0">{{ f.domaine }}</span>
+                        {% if f.est_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Archivee</span>{% endif %}
+                    </div>
+                    <h2 class="h5 text-ensi mb-2">{{ f.nom }}</h2>
+                    <p class="small text-muted mb-1">{{ f.get_niveau_display }}{% if f.parcours %} · {{ f.parcours }}{% endif %}</p>
+                    <p class="small text-muted mb-0">{{ f.get_reconnaissance_display }}</p>
+                    <div class="admin-item-actions">
+                        <a class="btn btn-sm btn-ensi" href="{% url 'administration:formation_detail' f.pk %}">Voir</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:formation_modifier' f.pk %}">Modifier</a>
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'administration:formation_supprimer' f.pk %}">Supprimer</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="empty-state"><i class="bi bi-mortarboard"></i>Aucune formation.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

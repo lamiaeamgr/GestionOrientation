@@ -1,0 +1,55 @@
+from django.urls import path
+
+from . import views
+
+app_name = 'administration'
+
+urlpatterns = [
+    path('', views.accueil, name='accueil'),
+    path('formations/', views.formations_liste, name='formations'),
+    path('formations/nouvelle/', views.formation_editer, name='formation_creer'),
+    path('formations/<int:pk>/', views.formation_detail, name='formation_detail'),
+    path('formations/<int:pk>/modifier/', views.formation_editer, name='formation_modifier'),
+    path('formations/<int:pk>/supprimer/', views.formation_supprimer, name='formation_supprimer'),
+    path('prerequis/<int:pk>/supprimer/', views.prerequis_supprimer, name='prerequis_supprimer'),
+    path('enseignants/', views.enseignants, name='enseignants'),
+    path('enseignants/<int:pk>/supprimer/', views.enseignant_supprimer, name='enseignant_supprimer'),
+    path('modules/', views.modules, name='modules'),
+    path('modules/<int:pk>/supprimer/', views.module_supprimer, name='module_supprimer'),
+    path('groupes/', views.groupes, name='groupes'),
+    path('groupes/<int:pk>/supprimer/', views.groupe_supprimer, name='groupe_supprimer'),
+    path('evaluations/', views.campagnes_liste, name='campagnes'),
+    path('evaluations/nouvelle/', views.campagne_editer, name='campagne_creer'),
+    path('evaluations/<int:pk>/', views.campagne_detail, name='campagne_detail'),
+    path('evaluations/<int:pk>/modifier/', views.campagne_editer, name='campagne_modifier'),
+    path('evaluations/<int:pk>/supprimer/', views.campagne_supprimer, name='campagne_supprimer'),
+    path('evaluations/<int:pk>/emails/', views.campagne_emails, name='campagne_emails'),
+    path('evaluations/<int:pk>/statut/<slug:statut>/', views.campagne_statut, name='campagne_statut'),
+    path(
+        'evaluations/questions/<int:pk>/supprimer/',
+        views.question_eval_supprimer,
+        name='question_eval_supprimer',
+    ),
+    path('candidats/', views.candidats_liste, name='candidats'),
+    path('candidats/<int:pk>/', views.candidat_detail, name='candidat_detail'),
+    path('questionnaires/', views.questionnaires_liste, name='questionnaires'),
+    path('questionnaires/<int:pk>/', views.questionnaire_detail, name='questionnaire_detail'),
+    path('questions/<int:pk>/', views.question_detail, name='question_detail'),
+    path('questions/<int:pk>/supprimer/', views.question_supprimer, name='question_supprimer'),
+    path('options/<int:pk>/ponderations/', views.option_ponderations, name='option_ponderations'),
+    path('options/<int:pk>/supprimer/', views.option_supprimer, name='option_supprimer'),
+    path(
+        'ponderations/<int:pk>/supprimer/',
+        views.ponderation_supprimer,
+        name='ponderation_supprimer',
+    ),
+    path('conseillers/', views.conseillers_liste, name='conseillers'),
+    path('conseillers/nouveau/', views.conseiller_editer, name='conseiller_creer'),
+    path('conseillers/<int:pk>/modifier/', views.conseiller_editer, name='conseiller_modifier'),
+    path('rendez-vous/', views.rdv_liste, name='rdv'),
+    path('rendez-vous/<int:pk>/annuler/', views.rdv_annuler, name='rdv_annuler'),
+    path('etudiants-ensi/', views.etudiants_liste, name='etudiants'),
+    path('etudiants-ensi/<int:pk>/supprimer/', views.etudiant_supprimer, name='etudiant_supprimer'),
+    path('interets/', views.interets_liste, name='interets'),
+    path('interets/<int:pk>/supprimer/', views.interet_supprimer, name='interet_supprimer'),
+]

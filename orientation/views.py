@@ -4,9 +4,10 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from .ai import appliquer_personnalisation, generer_questionnaire_personnalise
 from .engine import generer_recommandation
+from .forms import QuestionnaireReponsesForm
 from .models import (
-    Question,
     Questionnaire,
     Recommandation,
     ReponseCandidat,
@@ -28,10 +29,10 @@ def demarrer(request):
     profil = _profil_ou_redirection(request)
     if profil is None:
         return redirect('dashboard:home')
-    if not profil.profil_complete:
+    if not profil.profil_complete or not profil.objectif:
         messages.warning(
             request,
-            "Completez d'abord votre dossier academique avant le questionnaire.",
+            "Indiquez d'abord votre projet (public ou prive) et completez votre dossier.",
         )
         return redirect('candidats:profil')
     questionnaire = (
@@ -40,8 +41,12 @@ def demarrer(request):
     if questionnaire is None:
         messages.error(request, "Aucun questionnaire actif n'est disponible.")
         return redirect('dashboard:home')
+    questions = list(questionnaire.questions.prefetch_related('options'))
+    perso = generer_questionnaire_personnalise(profil, questions)
     tentative = TentativeQuestionnaire.objects.create(
-        profil=profil, questionnaire=questionnaire
+        profil=profil,
+        questionnaire=questionnaire,
+        personnalisation=perso or {},
     )
     return redirect('orientation:passer', pk=tentative.pk)
 
@@ -59,46 +64,31 @@ def passer(request, pk):
     if tentative.statut == TentativeQuestionnaire.Statut.TERMINE:
         return redirect('orientation:resultats', pk=tentative.recommandation.pk)
 
-    questions = tentative.questionnaire.questions.prefetch_related('options')
+    questions = list(tentative.questionnaire.questions.prefetch_related('options'))
+    questions, intro_ia = appliquer_personnalisation(
+        questions, tentative.personnalisation
+    )
 
     if request.method == 'POST':
-        valide = True
-        reponses_a_creer = []
-        for question in questions:
-            champ = f'question_{question.id}'
-            if question.type_question == Question.TypeQuestion.CHOIX_MULTIPLE:
-                ids = request.POST.getlist(champ)
-            else:
-                valeur = request.POST.get(champ)
-                ids = [valeur] if valeur else []
-            ids_valides = [
-                int(i) for i in ids
-                if i.isdigit() and question.options.filter(pk=int(i)).exists()
-            ]
-            if not ids_valides:
-                valide = False
-                break
-            for option_id in ids_valides:
-                reponses_a_creer.append(
-                    ReponseCandidat(
-                        tentative=tentative, question=question, option_id=option_id
-                    )
-                )
-        if not valide:
-            messages.error(request, 'Veuillez repondre a toutes les questions.')
-        else:
+        form = QuestionnaireReponsesForm(request.POST, questions=questions)
+        if form.is_valid():
             with transaction.atomic():
-                ReponseCandidat.objects.bulk_create(reponses_a_creer)
+                ReponseCandidat.objects.bulk_create(form.reponses_pour(tentative))
                 tentative.statut = TentativeQuestionnaire.Statut.TERMINE
                 tentative.date_soumission = timezone.now()
                 tentative.save(update_fields=['statut', 'date_soumission'])
                 recommandation = generer_recommandation(profil, tentative)
             messages.success(request, 'Questionnaire termine. Voici vos recommandations.')
             return redirect('orientation:resultats', pk=recommandation.pk)
+        messages.error(request, 'Veuillez repondre a toutes les questions.')
+    else:
+        form = QuestionnaireReponsesForm(questions=questions)
 
     return render(request, 'orientation/questionnaire.html', {
         'tentative': tentative,
         'questions': questions,
+        'form': form,
+        'intro_ia': intro_ia,
     })
 
 

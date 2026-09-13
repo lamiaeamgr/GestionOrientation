@@ -1,6 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+
+from .utils import email_est_ensi, normaliser_email
 
 
 class Enseignant(models.Model):
@@ -27,6 +30,10 @@ class Module(models.Model):
 
 class GroupeEtudiant(models.Model):
     nom = models.CharField(max_length=100)
+    filiere = models.CharField(
+        max_length=80, blank=True,
+        help_text='Ex. : Genie Informatique, Genie Civil',
+    )
     annee_universitaire = models.CharField(max_length=20, help_text='Ex. : 2025-2026')
 
     class Meta:
@@ -34,7 +41,39 @@ class GroupeEtudiant(models.Model):
         ordering = ['annee_universitaire', 'nom']
 
     def __str__(self):
+        if self.filiere:
+            return f'{self.nom} — {self.filiere} ({self.annee_universitaire})'
         return f'{self.nom} ({self.annee_universitaire})'
+
+
+class EtudiantInterne(models.Model):
+    """Etudiant ENSI autorisable sur une campagne (email ecole uniquement)."""
+
+    prenom = models.CharField(max_length=100)
+    nom = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    filiere = models.CharField(max_length=80)
+    groupe = models.ForeignKey(
+        GroupeEtudiant, on_delete=models.CASCADE, related_name='etudiants'
+    )
+
+    class Meta:
+        verbose_name = 'etudiant interne'
+        ordering = ['groupe', 'nom', 'prenom']
+
+    def __str__(self):
+        return f'{self.prenom} {self.nom} ({self.email})'
+
+    def clean(self):
+        self.email = normaliser_email(self.email)
+        if self.email and not email_est_ensi(self.email):
+            raise ValidationError({
+                'email': "L'adresse doit appartenir au domaine ENSI (ensi.ma, ensit.ma).",
+            })
+
+    def save(self, *args, **kwargs):
+        self.email = normaliser_email(self.email)
+        super().save(*args, **kwargs)
 
 
 class CampagneEvaluation(models.Model):
@@ -64,6 +103,16 @@ class CampagneEvaluation(models.Model):
     class Meta:
         verbose_name = "campagne d'evaluation"
         ordering = ['-date_debut']
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(date_debut__isnull=True)
+                    | models.Q(date_fin__isnull=True)
+                    | models.Q(date_fin__gt=models.F('date_debut'))
+                ),
+                name='eval_campagne_fin_apres_debut',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.titre} - {self.module} / {self.enseignant}'

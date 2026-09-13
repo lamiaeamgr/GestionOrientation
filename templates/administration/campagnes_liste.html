@@ -1,0 +1,40 @@
+{% extends 'administration/base.html' %}
+{% block title %}Evaluations - Administration{% endblock %}
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="section-title">Pedagogie</div>
+        <h1 class="h3 text-ensi mb-0">Campagnes d'evaluation</h1>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'administration:enseignants' %}">Enseignants</a>
+        <a class="btn btn-outline-primary" href="{% url 'administration:modules' %}">Modules</a>
+        <a class="btn btn-outline-primary" href="{% url 'administration:groupes' %}">Groupes</a>
+        <a class="btn btn-ensi" href="{% url 'administration:campagne_creer' %}">Nouvelle campagne</a>
+    </div>
+</div>
+<div class="row g-3">
+    {% for c in campagnes %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card admin-item">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-2 mb-2">
+                        <span class="section-title mb-0">{{ c.module.code }}</span>
+                        <span class="badge text-bg-light">{{ c.get_statut_display }}</span>
+                    </div>
+                    <h2 class="h5 text-ensi mb-2">{{ c.titre }}</h2>
+                    <p class="small text-muted mb-1">{{ c.enseignant }} · {{ c.groupe }}</p>
+                    <p class="small text-muted mb-0">{{ c.nb_reponses }} reponses / {{ c.nb_autorises }} autorises</p>
+                    <div class="admin-item-actions">
+                        <a class="btn btn-sm btn-ensi" href="{% url 'administration:campagne_detail' c.pk %}">Ouvrir</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:campagne_modifier' c.pk %}">Modifier</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:campagne_emails' c.pk %}">Etudiants</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="empty-state"><i class="bi bi-megaphone"></i>Aucune campagne.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

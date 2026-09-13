@@ -10,10 +10,23 @@
         <i class="bi bi-calendar-check me-1"></i>Prendre rendez-vous
     </a>
 </div>
-<p class="text-muted-2 mb-4">
+<p class="text-muted-2 mb-3">
     <i class="bi bi-info-circle me-1"></i>
     Score = 35 % profil academique + 40 % questionnaire + 25 % centres d'interet.
+    {% if recommandation.profil.vise_diplome_reconnu %}
+        Projet public : uniquement des formations <strong>reconnues par l'Etat</strong>.
+    {% elif recommandation.profil.vise_secteur_prive %}
+        Projet prive : les formations <strong>accreditees</strong> sont aussi proposees.
+    {% endif %}
 </p>
+{% if recommandation.avis_ia %}
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="section-title mb-2">Conseiller IA</div>
+        <p class="mb-0">{{ recommandation.avis_ia }}</p>
+    </div>
+</div>
+{% endif %}
 
 <form method="get" action="{% url 'formations:comparer' %}" id="form-compare">
 {% for ligne in lignes %}
@@ -28,6 +41,7 @@
                     <div>
                         <span class="badge badge-soft">{{ ligne.formation.domaine }}</span>
                         <span class="badge bg-light text-dark">{{ ligne.formation.get_niveau_display }}</span>
+                        <span class="badge badge-soft-amber">{{ ligne.formation.get_reconnaissance_display }}</span>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-3">

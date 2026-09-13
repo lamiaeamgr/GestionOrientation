@@ -29,8 +29,27 @@ class Formation(models.Model):
     matieres_importantes = models.ManyToManyField(
         Matiere, blank=True, related_name='formations'
     )
+    class Reconnaissance(models.TextChoices):
+        RECONNUE = 'reconnue', "Reconnue par l'Etat"
+        ACCREDITEE = 'accreditee', 'Accreditee uniquement'
+
     debouches = models.TextField(blank=True)
+    reconnaissance = models.CharField(
+        max_length=20,
+        choices=Reconnaissance.choices,
+        default=Reconnaissance.RECONNUE,
+        help_text=(
+            "Projet public : formations reconnues par l'Etat. "
+            "Projet prive : les formations accreditees sont aussi proposees."
+        ),
+    )
     est_active = models.BooleanField(default=True)
+    image = models.ImageField(
+        'image de couverture',
+        upload_to='formations/',
+        blank=True,
+        help_text='Affichee sur le catalogue candidat et dans l administration.',
+    )
 
     class Meta:
         verbose_name = 'formation'

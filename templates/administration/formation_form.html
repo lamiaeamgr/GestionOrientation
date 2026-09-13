@@ -1,0 +1,17 @@
+{% extends 'administration/base.html' %}
+{% load dict_extras %}
+{% block title %}{% if formation %}Modifier{% else %}Nouvelle{% endif %} formation{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-4">{% if formation %}Modifier {{ formation.nom }}{% else %}Nouvelle formation{% endif %}</h1>
+<div class="card"><div class="card-body p-4">
+    {% if formation %}
+        <img class="card-cover mb-3" src="{% formation_cover formation %}" alt="{{ formation.nom }}">
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        <button class="btn btn-ensi">Enregistrer</button>
+        <a class="btn btn-outline-secondary" href="{% url 'administration:formations' %}">Annuler</a>
+    </form>
+</div></div>
+{% endblock %}

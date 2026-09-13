@@ -1,0 +1,13 @@
+{% extends 'administration/base.html' %}
+{% block title %}{% if conseiller %}Modifier{% else %}Nouveau{% endif %} conseiller{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-4">{% if conseiller %}Modifier le conseiller{% else %}Nouveau conseiller{% endif %}</h1>
+<div class="card"><div class="card-body p-4">
+    <form method="post">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        <button class="btn btn-ensi">Enregistrer</button>
+        <a class="btn btn-outline-secondary" href="{% url 'administration:conseillers' %}">Annuler</a>
+    </form>
+</div></div>
+{% endblock %}

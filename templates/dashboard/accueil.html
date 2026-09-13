@@ -1,42 +1,85 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block before_main %}
+<section class="hero-photo">
+    <div class="container hero-inner">
+        <span class="hero-badge mb-3">Ecole reconnue par l'Etat</span>
+        <h1 class="mt-2">Votre tremplin vers le bon choix de filiere</h1>
+        <p class="lead mt-3 mb-4">
+            Completez votre dossier academique, renseignez vos centres d'interet et passez
+            le questionnaire d'orientation pour obtenir des recommandations explicables.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-accent" href="{% url 'accounts:register' %}">Commencer mon orientation</a>
+            <a class="btn btn-light-ghost" href="{% url 'formations:liste' %}">Decouvrir les formations</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
 {% block content %}
-<div class="hero p-4 p-md-5 mb-5">
-    <span class="hero-badge mb-3"><i class="bi bi-stars"></i>Plateforme d'orientation ENSI</span>
-    <h1 class="display-5 mt-3">Trouvez la filiere faite pour vous</h1>
-    <p class="lead col-lg-8">
-        Completez votre dossier academique, renseignez vos centres d'interet et passez
-        le questionnaire d'orientation pour obtenir des recommandations explicables.
-    </p>
-    <div class="d-flex flex-wrap gap-2 mt-4">
-        <a class="btn btn-accent btn-lg" href="{% url 'accounts:register' %}">
-            <i class="bi bi-rocket-takeoff me-1"></i>Commencer mon orientation
-        </a>
-        <a class="btn btn-light-ghost btn-lg" href="{% url 'formations:liste' %}">Decouvrir les formations</a>
+<div class="mb-4">
+    <div class="section-title">ENSI en bref</div>
+    <h2 class="section-heading">Des formations d'excellence en ingenierie et management</h2>
+</div>
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <article class="photo-card">
+            <img src="{% static 'img/genie-informatique.jpg' %}" alt="Ecole d'ingenierie ENSI">
+            <div class="photo-card-body">
+                <h2>Ecole d'ingenierie</h2>
+                <p class="text-muted-2 mb-3">Cycle preparatoire, genie informatique, industriel et civil — un parcours technique exigeant.</p>
+                <a class="btn btn-ensi btn-sm" href="{% url 'formations:liste' %}">Voir les filieres</a>
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="photo-card">
+            <img src="{% static 'img/management.jpg' %}" alt="Ecole de management ENSI">
+            <div class="photo-card-body">
+                <h2>Ecole de management</h2>
+                <p class="text-muted-2 mb-3">Licences et masters d'Etat en finance, marketing, logistique et gouvernance.</p>
+                <a class="btn btn-ensi btn-sm" href="{% url 'formations:liste' %}">Voir les parcours</a>
+            </div>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="photo-card">
+            <img src="{% static 'img/campus-life.jpg' %}" alt="Vie estudiantine ENSI">
+            <div class="photo-card-body">
+                <h2>Accompagnement</h2>
+                <p class="text-muted-2 mb-3">Questionnaire, recommandations expliquees et rendez-vous avec un conseiller d'orientation.</p>
+                <a class="btn btn-ensi btn-sm" href="{% url 'accounts:register' %}">Creer mon dossier</a>
+            </div>
+        </article>
     </div>
 </div>
 
+<div class="mb-4">
+    <div class="section-title">Comment ca marche</div>
+    <h2 class="section-heading">Trois etapes pour affiner votre choix</h2>
+</div>
 <div class="row g-4">
     <div class="col-md-4">
-        <div class="card h-100 card-lift"><div class="card-body p-4">
+        <div class="card h-100"><div class="card-body p-4">
             <div class="stat-icon blue mb-3"><i class="bi bi-mortarboard"></i></div>
             <div class="section-title mb-1">Etape 1</div>
-            <h2 class="h5 text-ensi">Dossier academique</h2>
+            <h3 class="h5 text-ensi">Dossier academique</h3>
             <p class="text-muted-2 mb-0">Bac, Bac+2 ou Bac+3 : un formulaire adapte a votre niveau d'entree.</p>
         </div></div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 card-lift"><div class="card-body p-4">
+        <div class="card h-100"><div class="card-body p-4">
             <div class="stat-icon amber mb-3"><i class="bi bi-ui-checks-grid"></i></div>
             <div class="section-title mb-1">Etape 2</div>
-            <h2 class="h5 text-ensi">Questionnaire d'orientation</h2>
+            <h3 class="h5 text-ensi">Questionnaire d'orientation</h3>
             <p class="text-muted-2 mb-0">Des mises en situation pour identifier vos affinites reelles.</p>
         </div></div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 card-lift"><div class="card-body p-4">
-            <div class="stat-icon green mb-3"><i class="bi bi-calendar-check"></i></div>
+        <div class="card h-100"><div class="card-body p-4">
+            <div class="stat-icon blue mb-3"><i class="bi bi-calendar-check"></i></div>
             <div class="section-title mb-1">Etape 3</div>
-            <h2 class="h5 text-ensi">Recommandations &amp; rendez-vous</h2>
+            <h3 class="h5 text-ensi">Recommandations &amp; rendez-vous</h3>
             <p class="text-muted-2 mb-0">Un classement explique, une comparaison des formations et un entretien conseiller.</p>
         </div></div>
     </div>

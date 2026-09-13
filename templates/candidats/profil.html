@@ -1,27 +1,50 @@
 {% extends 'base.html' %}
 {% block title %}Dossier academique - ENSI Orientation{% endblock %}
 {% block content %}
-<h1 class="h3 text-ensi mb-4">Mon dossier academique</h1>
+<h1 class="h3 text-ensi mb-2">Mon dossier academique</h1>
+<p class="text-muted-2 mb-4">
+    Indiquez d'abord votre projet, puis votre filiere marocaine.
+    Les matieres proposees correspondent a cette filiere (Bac, FSJES, FST, BTS...).
+</p>
 <form method="post" id="form-profil">
     {% csrf_token %}
+    <datalist id="villes-maroc">
+        {% for v in villes %}<option value="{{ v }}">{% endfor %}
+        {% for v in form_profil.villes %}<option value="{{ v }}">{% endfor %}
+    </datalist>
+    <datalist id="etablissements-suggeres">
+        {% for e in form_acad.etablissements %}<option value="{{ e }}">{% endfor %}
+    </datalist>
+
     <div class="card mb-4">
-        <div class="card-header fw-bold">Informations generales</div>
-        <div class="card-body row g-3">
-            {% for field in form_profil %}
-                <div class="col-md-4">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-                </div>
-            {% endfor %}
-            <div class="col-12">
-                <div class="form-text">Le choix du niveau d'entree adapte les champs ci-dessous.</div>
+        <div class="card-header fw-bold">1. Votre projet</div>
+        <div class="card-body">
+            <p class="small text-muted-2 mb-3">
+                Public / ecole reconnue : uniquement des formations
+                <strong>reconnues par l'Etat</strong>.
+                Secteur prive : les formations <strong>accreditees</strong> sont aussi proposees.
+            </p>
+            <div class="mb-3">
+                <label class="form-label">{{ form_profil.objectif.label }}</label>
+                {{ form_profil.objectif }}
+                {% for error in form_profil.objectif.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="row g-3">
+                {% for field in form_profil %}
+                    {% if field.name != 'objectif' %}
+                    <div class="col-md-4">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
 
     <div class="card mb-4">
-        <div class="card-header"><i class="bi bi-award me-1"></i>Diplome et resultats</div>
+        <div class="card-header"><i class="bi bi-award me-1"></i>2. Filiere et resultats</div>
         <div class="card-body row g-3">
             {% for field in form_acad %}
                 <div class="col-md-4">
@@ -35,27 +58,23 @@
     </div>
 
     <div class="card mb-4">
-        <div class="card-header fw-bold">Notes par matiere</div>
+        <div class="card-header fw-bold">3. Notes de votre filiere</div>
         <div class="card-body">
-            {{ formset.management_form }}
+            <p class="small text-muted-2 mb-3">
+                Matieres suggerees pour votre parcours. Laissez vide si vous n'avez pas la note.
+            </p>
             <div class="row g-3">
-                {% for form in formset %}
-                    <div class="col-md-4 border rounded p-2 me-2 mb-2">
-                        {% for field in form %}
-                            <div class="mb-2">
-                                <label class="form-label small">{{ field.label }}</label>
-                                {{ field }}
-                            </div>
-                        {% endfor %}
-                        {% if form.DELETE %}
-                            <div class="form-check">{{ form.DELETE }} <label class="form-check-label small">Supprimer</label></div>
-                        {% endif %}
+                {% for field in form_notes %}
+                    <div class="col-md-4">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                     </div>
                 {% endfor %}
             </div>
-            {% for form in formset %}
-                {% for error in form.non_field_errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-            {% endfor %}
+            {% if not form_notes.fields %}
+                <div class="empty-state py-3">Choisissez d'abord une filiere pour afficher les matieres.</div>
+            {% endif %}
         </div>
     </div>
 
@@ -64,11 +83,16 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-// Rechargement dynamique des champs quand le niveau d'entree change
-document.getElementById('id_niveau_entree').addEventListener('change', function () {
+(function () {
     const form = document.getElementById('form-profil');
-    form.method = 'get';
-    form.submit();
-});
+    ['id_niveau_entree', 'id_type_diplome', 'id_specialite'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', function () {
+            form.method = 'get';
+            form.submit();
+        });
+    });
+})();
 </script>
 {% endblock %}

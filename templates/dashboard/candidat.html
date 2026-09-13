@@ -5,6 +5,9 @@
     <div>
         <div class="section-title">Mon espace candidat</div>
         <h1 class="h3 text-ensi mb-0">Bonjour, {{ user.first_name|default:user.email }}</h1>
+        {% if profil.objectif %}
+            <div class="small text-muted-2 mt-1">Projet : {{ profil.get_objectif_display }}</div>
+        {% endif %}
     </div>
     {% if profil.profil_complete %}
         <a class="btn btn-ensi" href="{% url 'orientation:demarrer' %}">

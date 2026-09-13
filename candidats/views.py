@@ -2,7 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import InteretsForm, NoteAcademiqueFormSet, ProfilAcademiqueForm, ProfilCandidatForm
+from .catalogues import VILLES_MAROC
+from .forms import InteretsForm, NotesFiliereForm, ProfilAcademiqueForm, ProfilCandidatForm
 from .models import ProfilAcademique, ProfilCandidat
 
 
@@ -14,45 +15,70 @@ def _profil_candidat(request):
     return profil
 
 
+def _contexte_academique(request, profil_cand, academique):
+    if request.method == 'POST':
+        source = request.POST
+    elif any(k in request.GET for k in ('niveau_entree', 'type_diplome', 'specialite')):
+        source = request.GET
+    else:
+        source = None
+    niveau = (source.get('niveau_entree') if source else None) or profil_cand.niveau_entree
+    type_diplome = (source.get('type_diplome') if source else None) or academique.type_diplome
+    specialite = (source.get('specialite') if source else None) or academique.specialite
+    return source, niveau, type_diplome, specialite
+
+
 @login_required
 def profil(request):
-    """Dossier academique : formulaire dynamique selon le niveau d'entree."""
+    """Dossier academique : filieres marocaines et matieres dynamiques."""
     profil_cand = _profil_candidat(request)
     if profil_cand is None:
         messages.error(request, "Cette page est reservee aux candidats.")
         return redirect('dashboard:home')
 
     academique, _ = ProfilAcademique.objects.get_or_create(profil=profil_cand)
+    source, niveau, type_diplome, specialite = _contexte_academique(
+        request, profil_cand, academique
+    )
 
     if request.method == 'POST':
         form_profil = ProfilCandidatForm(request.POST, instance=profil_cand)
-        niveau = request.POST.get('niveau_entree') or profil_cand.niveau_entree
-        form_acad = ProfilAcademiqueForm(request.POST, instance=academique, niveau=niveau)
-        formset = NoteAcademiqueFormSet(request.POST, instance=academique)
-        if form_profil.is_valid() and form_acad.is_valid() and formset.is_valid():
+        form_acad = ProfilAcademiqueForm(
+            request.POST, instance=academique, niveau=niveau, type_diplome=type_diplome
+        )
+        form_notes = NotesFiliereForm(
+            request.POST,
+            academique=academique,
+            niveau=niveau,
+            type_diplome=type_diplome,
+            specialite=specialite,
+        )
+        if form_profil.is_valid() and form_acad.is_valid() and form_notes.is_valid():
             form_profil.save()
             form_acad.save()
-            formset.save()
+            form_notes.save()
             profil_cand.profil_complete = True
             profil_cand.save(update_fields=['profil_complete'])
             messages.success(request, 'Votre dossier academique a ete enregistre.')
             return redirect('candidats:interets')
     else:
-        # Changement de niveau via GET : on re-affiche les champs adaptes
-        # en conservant les valeurs deja saisies.
-        donnees = request.GET if 'niveau_entree' in request.GET else None
-        niveau = (
-            request.GET.get('niveau_entree') or profil_cand.niveau_entree
+        form_profil = ProfilCandidatForm(source, instance=profil_cand)
+        form_acad = ProfilAcademiqueForm(
+            source, instance=academique, niveau=niveau, type_diplome=type_diplome
         )
-        form_profil = ProfilCandidatForm(donnees, instance=profil_cand)
-        form_acad = ProfilAcademiqueForm(donnees, instance=academique, niveau=niveau)
-        formset = NoteAcademiqueFormSet(instance=academique)
+        form_notes = NotesFiliereForm(
+            academique=academique,
+            niveau=niveau,
+            type_diplome=type_diplome,
+            specialite=specialite,
+        )
 
     return render(request, 'candidats/profil.html', {
         'form_profil': form_profil,
         'form_acad': form_acad,
-        'formset': formset,
+        'form_notes': form_notes,
         'profil': profil_cand,
+        'villes': VILLES_MAROC,
     })
 
 

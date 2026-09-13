@@ -12,9 +12,13 @@
             <tr>
                 <td>{{ t.date_debut|date:'d/m/Y H:i' }}</td>
                 <td>{{ t.questionnaire.titre }} (v{{ t.questionnaire.version }})</td>
-                <td><span class="badge bg-{{ t.statut == 'termine'|yesno:'success,secondary' }}">{{ t.get_statut_display }}</span></td>
                 <td>
-                    {% if t.statut == 'termine' %}
+                    <span class="badge {% if t.statut == 'termine' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ t.get_statut_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if t.statut == 'termine' and t.recommandation %}
                         <a href="{% url 'orientation:resultats' t.recommandation.pk %}">Voir les resultats</a>
                     {% else %}
                         <a href="{% url 'orientation:passer' t.pk %}">Reprendre</a>

@@ -1,0 +1,14 @@
+{% extends 'administration/base.html' %}
+{% block title %}{% if campagne %}Modifier{% else %}Nouvelle{% endif %} campagne{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-4">{% if campagne %}Modifier la campagne{% else %}Nouvelle campagne{% endif %}</h1>
+<p class="text-muted-2">Une nouvelle campagne recoit automatiquement les criteres du cahier des charges (notes 1-5 + commentaires).</p>
+<div class="card"><div class="card-body p-4">
+    <form method="post">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        <button class="btn btn-ensi">Enregistrer</button>
+        <a class="btn btn-outline-secondary" href="{% url 'administration:campagnes' %}">Annuler</a>
+    </form>
+</div></div>
+{% endblock %}

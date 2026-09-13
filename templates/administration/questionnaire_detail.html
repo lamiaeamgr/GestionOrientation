@@ -1,0 +1,26 @@
+{% extends 'administration/base.html' %}
+{% block title %}{{ questionnaire.titre }}{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-4">{{ questionnaire.titre }} (v{{ questionnaire.version }})</h1>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Questions</h2>
+            <ol class="mb-0">
+                {% for q in questions %}
+                    <li class="mb-3">
+                        <a href="{% url 'administration:question_detail' q.pk %}">{{ q.texte }}</a>
+                        <div class="small text-muted">{{ q.options.count }} option(s) — {{ q.get_type_question_display }}</div>
+                    </li>
+                {% empty %}<li class="text-muted">Aucune question.</li>{% endfor %}
+            </ol>
+        </div></div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Ajouter une question</h2>
+            <form method="post">{% csrf_token %}{% include 'includes/form_fields.html' %}<button class="btn btn-ensi">Ajouter</button></form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

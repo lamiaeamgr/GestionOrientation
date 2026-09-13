@@ -1,0 +1,41 @@
+{% extends 'administration/base.html' %}
+{% block title %}{{ profil.utilisateur }}{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-4">{{ profil.utilisateur.get_full_name|default:profil.utilisateur.email }}</h1>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4"><div class="card-body p-4">
+            <p><strong>Email :</strong> {{ profil.utilisateur.email }}</p>
+            <p><strong>Niveau :</strong> {{ profil.get_niveau_entree_display|default:'—' }}</p>
+            <p><strong>Projet :</strong> {{ profil.get_objectif_display|default:'—' }}</p>
+            {% if academique %}
+                <p class="mb-0"><strong>Etablissement :</strong> {{ academique.etablissement|default:'—' }} — moyenne {{ academique.moyenne_generale|default:'—' }}/20</p>
+            {% endif %}
+        </div></div>
+        {% if recommandation %}
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Derniere recommandation</h2>
+            <ol class="mb-0">
+                {% for ligne in recommandation.lignes.all %}
+                    <li>{{ ligne.formation.nom }} — {{ ligne.score_final }} %</li>
+                {% endfor %}
+            </ol>
+        </div></div>
+        {% endif %}
+    </div>
+    <div class="col-lg-5">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Statut du compte</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-check mb-3">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                    <div class="form-text">{{ form.is_active.help_text }}</div>
+                </div>
+                <button class="btn btn-ensi">Mettre a jour</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

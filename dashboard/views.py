@@ -1,13 +1,9 @@
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Avg, Count
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from candidats.models import ProfilCandidat
 from conseil.models import RendezVous
-from evaluations.models import CampagneEvaluation, ReponseQuestionEvaluation
-from orientation.models import RecommandationFormation, TentativeQuestionnaire
+from orientation.models import TentativeQuestionnaire
 
 
 def accueil_public(request):
@@ -22,7 +18,7 @@ def home(request):
     """Redirige vers le tableau de bord adapte au role."""
     user = request.user
     if user.est_admin:
-        return redirect('dashboard:admin')
+        return redirect('administration:accueil')
     if user.est_conseiller:
         return redirect('conseil:espace')
     return redirect('dashboard:candidat')
@@ -71,56 +67,3 @@ def candidat(request):
     })
 
 
-def _est_admin(user):
-    return user.is_authenticated and user.est_admin
-
-
-@login_required
-@user_passes_test(_est_admin)
-def admin_dashboard(request):
-    """Tableau de bord administrateur : indicateurs cles."""
-    nb_candidats = ProfilCandidat.objects.count()
-    nb_profils_complets = ProfilCandidat.objects.filter(profil_complete=True).count()
-    nb_questionnaires = TentativeQuestionnaire.objects.filter(
-        statut=TentativeQuestionnaire.Statut.TERMINE
-    ).count()
-    nb_rdv = RendezVous.objects.filter(
-        statut=RendezVous.Statut.CONFIRME
-    ).count()
-
-    repartition = list(
-        RecommandationFormation.objects
-        .values('formation__nom')
-        .annotate(nb=Count('id'), score_moyen=Avg('score_final'))
-        .order_by('-nb')[:10]
-    )
-    # Filiere la mieux classee par recommandation
-    top_filiere = list(
-        RecommandationFormation.objects
-        .values('formation__nom')
-        .annotate(nb=Count('id'), score_moyen=Avg('score_final'))
-        .order_by('-score_moyen')[:5]
-    )
-
-    campagnes = CampagneEvaluation.objects.annotate(
-        nb_reponses=Count('reponses')
-    ).select_related('enseignant', 'module')[:10]
-
-    stats_eval = list(
-        ReponseQuestionEvaluation.objects
-        .filter(note__isnull=False)
-        .values('reponse__campagne__titre')
-        .annotate(moyenne=Avg('note'), total=Count('id'))
-        .order_by('-total')[:10]
-    )
-
-    return render(request, 'dashboard/admin.html', {
-        'nb_candidats': nb_candidats,
-        'nb_profils_complets': nb_profils_complets,
-        'nb_questionnaires': nb_questionnaires,
-        'nb_rdv': nb_rdv,
-        'repartition': repartition,
-        'top_filiere': top_filiere,
-        'campagnes': campagnes,
-        'stats_eval': stats_eval,
-    })

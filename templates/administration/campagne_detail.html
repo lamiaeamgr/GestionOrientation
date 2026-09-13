@@ -1,0 +1,99 @@
+{% extends 'administration/base.html' %}
+{% block title %}{{ campagne.titre }}{% endblock %}
+{% block admin %}
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-4 gap-2">
+    <div>
+        <div class="section-title">{{ campagne.get_statut_display }}</div>
+        <h1 class="h3 text-ensi mb-1">{{ campagne.titre }}</h1>
+        <p class="text-muted-2 mb-0">{{ campagne.module }} — {{ campagne.enseignant }} — {{ campagne.groupe }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'administration:campagne_modifier' campagne.pk %}">Modifier</a>
+        <a class="btn btn-ensi" href="{% url 'administration:campagne_emails' campagne.pk %}">Autoriser des etudiants</a>
+        <a class="btn btn-outline-danger" href="{% url 'administration:campagne_supprimer' campagne.pk %}">Supprimer</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="stat-label">Etudiants autorises</div>
+        <div class="stat-value">{{ nb_autorises }}</div>
+        <div class="small text-muted">Empreintes uniquement — aucun email visible</div>
+    </div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="stat-label">Reponses recues</div>
+        <div class="stat-value">{{ nb_reponses }}</div>
+        <div class="small text-muted">Anonymes, non nominatives</div>
+    </div></div></div>
+    <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="stat-label">Taux de participation</div>
+        <div class="stat-value">{% if nb_autorises %}{{ nb_reponses|default:0 }} / {{ nb_autorises }}{% else %}—{% endif %}</div>
+        <div class="small text-muted">Sans savoir qui a repondu</div>
+    </div></div></div>
+</div>
+
+<div class="card mb-4"><div class="card-body p-4">
+    <h2 class="h6 text-ensi mb-3">Cycle de vie</h2>
+    <div class="d-flex flex-wrap gap-2">
+        {% for code, label in statuts %}
+            <form method="post" action="{% url 'administration:campagne_statut' campagne.pk code %}">
+                {% csrf_token %}
+                <button class="btn btn-sm {% if campagne.statut == code %}btn-ensi{% else %}btn-outline-primary{% endif %}" {% if campagne.statut == code %}disabled{% endif %}>{{ label }}</button>
+            </form>
+        {% endfor %}
+    </div>
+</div></div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Resultats agreges (notes /5)</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Critere</th><th>Moyenne</th><th>Notes</th></tr></thead>
+                <tbody>
+                    {% for s in stats %}
+                        <tr><td>{{ s.question__texte }}</td><td>{{ s.moyenne|floatformat:2 }}</td><td>{{ s.total }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="3" class="text-muted">Pas encore de notes.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div></div>
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Commentaires anonymes</h2>
+            {% for c in commentaires %}
+                <div class="mb-3">
+                    <div class="small text-muted">{{ c.question.texte }}</div>
+                    <div>{{ c.reponse_texte }}</div>
+                </div>
+            {% empty %}
+                <p class="text-muted mb-0">Aucun commentaire.</p>
+            {% endfor %}
+        </div></div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card mb-4"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Questions</h2>
+            <ul class="list-unstyled mb-0">
+                {% for q in questions %}
+                    <li class="d-flex justify-content-between align-items-start gap-2 py-2 border-bottom">
+                        <span>{{ q.ordre }}. {{ q.texte }} <span class="text-muted">({{ q.get_type_question_display }})</span></span>
+                        <form method="post" action="{% url 'administration:question_eval_supprimer' q.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger">Retirer</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div></div>
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Ajouter une question</h2>
+            <form method="post">
+                {% csrf_token %}
+                {% with form=qform %}{% include 'includes/form_fields.html' %}{% endwith %}
+                <button class="btn btn-ensi" name="ajouter_question" value="1">Ajouter</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

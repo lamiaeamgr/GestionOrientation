@@ -2,6 +2,9 @@
 {% block title %}Dossier candidat - ENSI Orientation{% endblock %}
 {% block content %}
 <div class="section-title">Dossier candidat</div>
+{% if retour_conseiller %}
+    <p class="mb-2"><a href="{% url 'conseil:espace' %}">Retour a l'espace conseiller</a></p>
+{% endif %}
 <h1 class="h3 text-ensi mb-4"><i class="bi bi-person-vcard me-2"></i>{{ profil.utilisateur.get_full_name|default:profil.utilisateur.email }}</h1>
 <div class="row g-4">
     <div class="col-md-6">

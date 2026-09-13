@@ -1,0 +1,36 @@
+{% extends 'administration/base.html' %}
+{% block title %}Centres d'interet{% endblock %}
+{% block admin %}
+<div class="mb-4">
+    <div class="section-title">Catalogue candidat</div>
+    <h1 class="h3 text-ensi mb-0">Centres d'interet</h1>
+    <p class="text-muted-2 mb-0">Ces choix apparaissent dans l'espace candidat avant le questionnaire.</p>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="row g-3">
+            {% for i in interets %}
+                <div class="col-md-6">
+                    <div class="card admin-item">
+                        <div class="card-body p-4">
+                            <span class="section-title">{{ i.get_categorie_display }}</span>
+                            <h2 class="h6 text-ensi mb-0">{{ i.nom }}</h2>
+                            <div class="admin-item-actions">
+                                <form method="post" action="{% url 'administration:interet_supprimer' i.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Supprimer</button></form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12"><div class="empty-state">Aucun interet.</div></div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Ajouter</h2>
+            <form method="post">{% csrf_token %}{% include 'includes/form_fields.html' %}<button class="btn btn-ensi">Ajouter</button></form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

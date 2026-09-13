@@ -16,7 +16,7 @@
                 <p><strong>Diplome :</strong> {{ academique.type_diplome }} &mdash;
                    <strong>Moyenne :</strong> {{ academique.moyenne_generale|default:'-' }}/20</p>
             {% endif %}
-            <a class="btn btn-sm btn-outline-primary" href="{% url 'candidats:detail' profil.pk %}">Dossier complet</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'conseil:dossier' profil.pk %}">Dossier complet</a>
         </div></div>
         {% if recommandation %}
             <div class="card"><div class="card-body">

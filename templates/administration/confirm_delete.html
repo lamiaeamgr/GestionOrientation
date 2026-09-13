@@ -1,0 +1,13 @@
+{% extends 'administration/base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block admin %}
+<div class="card"><div class="card-body p-4">
+    <h1 class="h4 text-ensi mb-3">{{ titre }}</h1>
+    <p>Confirmer la suppression de <strong>{{ objet }}</strong> ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Supprimer</button>
+        <a class="btn btn-outline-secondary" href="{% url retour %}">Annuler</a>
+    </form>
+</div></div>
+{% endblock %}

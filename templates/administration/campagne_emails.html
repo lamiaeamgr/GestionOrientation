@@ -1,0 +1,19 @@
+{% extends 'administration/base.html' %}
+{% block title %}Affecter une classe{% endblock %}
+{% block admin %}
+<h1 class="h3 text-ensi mb-2">Affecter la campagne — {{ campagne.titre }}</h1>
+<p class="text-muted-2">
+    {{ nb_autorises }} empreinte(s) deja enregistree(s).
+    Choisissez une classe ou une filiere d'etudiants internes ENSI.
+    Leurs emails deviennent des identifiants HMAC : vous ne saurez pas qui a repondu.
+</p>
+<div class="card"><div class="card-body p-4">
+    <form method="post">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        <button class="btn btn-ensi">Autoriser la classe / filiere</button>
+        <a class="btn btn-outline-secondary" href="{% url 'administration:campagne_detail' campagne.pk %}">Retour</a>
+        <a class="btn btn-outline-primary" href="{% url 'administration:etudiants' %}">Gerer les etudiants ENSI</a>
+    </form>
+</div></div>
+{% endblock %}

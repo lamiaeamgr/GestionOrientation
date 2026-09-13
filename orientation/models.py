@@ -86,6 +86,11 @@ class TentativeQuestionnaire(models.Model):
     statut = models.CharField(
         max_length=20, choices=Statut.choices, default=Statut.EN_COURS
     )
+    personnalisation = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Questions/options reformulees par l\'IA selon le profil.',
+    )
 
     class Meta:
         verbose_name = 'tentative de questionnaire'
@@ -121,6 +126,10 @@ class Recommandation(models.Model):
         related_name='recommandation', null=True, blank=True,
     )
     date_creation = models.DateTimeField(auto_now_add=True)
+    avis_ia = models.TextField(
+        blank=True,
+        help_text='Commentaire personnalise genere par le conseiller IA (Groq).',
+    )
 
     class Meta:
         ordering = ['-date_creation']

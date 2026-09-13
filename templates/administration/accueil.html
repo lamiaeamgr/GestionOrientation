@@ -1,0 +1,222 @@
+{% extends 'administration/base.html' %}
+{% block title %}Pilotage - Administration ENSI{% endblock %}
+{% block admin %}
+<div class="mb-4">
+    <div class="section-title">Espace administrateur</div>
+    <h1 class="h3 text-ensi mb-0">Tableau de bord</h1>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <a class="stat-card-link" href="{% url 'administration:candidats' %}">
+            <div class="card"><div class="card-body stat-card">
+                <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+                <div>
+                    <div class="stat-value">{{ nb_candidats }}</div>
+                    <div class="stat-label">Candidats inscrits</div>
+                </div>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a class="stat-card-link" href="{% url 'administration:candidats' %}">
+            <div class="card"><div class="card-body stat-card">
+                <div class="stat-icon green"><i class="bi bi-person-check"></i></div>
+                <div>
+                    <div class="stat-value">{{ nb_profils_complets }}</div>
+                    <div class="stat-label">Profils completes</div>
+                </div>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a class="stat-card-link" href="{% url 'administration:questionnaires' %}">
+            <div class="card"><div class="card-body stat-card">
+                <div class="stat-icon amber"><i class="bi bi-ui-checks-grid"></i></div>
+                <div>
+                    <div class="stat-value">{{ nb_questionnaires }}</div>
+                    <div class="stat-label">Questionnaires termines</div>
+                </div>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a class="stat-card-link" href="{% url 'administration:rdv' %}">
+            <div class="card"><div class="card-body stat-card">
+                <div class="stat-icon amber"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="stat-value">{{ nb_rdv }}</div>
+                    <div class="stat-label">Rendez-vous confirmes</div>
+                </div>
+            </div></div>
+        </a>
+    </div>
+</div>
+
+{{ graphiques|json_script:"admin-graphs" }}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Recommandations par formation</h2>
+            <canvas id="chartReco" height="120"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Candidats par niveau</h2>
+            <canvas id="chartNiveaux"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Rendez-vous par statut</h2>
+            <canvas id="chartRdv"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Moyennes d'evaluation /5</h2>
+            <canvas id="chartEval"></canvas>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-body p-4">
+            <h2 class="h6 text-ensi mb-3">Participation aux campagnes</h2>
+            <canvas id="chartPart"></canvas>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 text-ensi mb-0">Repartition des recommandations</h2>
+                <a class="small" href="{% url 'administration:formations' %}">Voir les formations</a>
+            </div>
+            {% for r in repartition %}
+                <a class="stat-card-link mb-2" href="{% url 'administration:formations' %}">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>{{ r.formation__nom }}</span>
+                        <span class="small text-muted">{{ r.nb }} reco · {{ r.score_moyen|floatformat:1 }} %</span>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="text-muted mb-0">Aucune donnee.</p>
+            {% endfor %}
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 text-ensi mb-0">Filieres les mieux classees</h2>
+                <a class="small" href="{% url 'administration:formations' %}">Gerer</a>
+            </div>
+            {% for r in top_filiere %}
+                <a class="stat-card-link mb-2" href="{% url 'administration:formations' %}">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>{{ r.formation__nom }}</span>
+                        <span class="badge badge-soft">{{ r.score_moyen|floatformat:1 }} %</span>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="text-muted mb-0">Aucune donnee.</p>
+            {% endfor %}
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 text-ensi mb-0">Campagnes d'evaluation</h2>
+                <a class="btn btn-sm btn-ensi" href="{% url 'administration:campagnes' %}">Toutes</a>
+            </div>
+            <div class="row g-3">
+                {% for c in campagnes %}
+                    <div class="col-12">
+                        <div class="card admin-item">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <strong>{{ c.titre }}</strong>
+                                    <span class="badge text-bg-light">{{ c.get_statut_display }}</span>
+                                </div>
+                                <div class="small text-muted mt-1">{{ c.nb_reponses }} reponses / {{ c.nb_autorises }} autorises</div>
+                                <div class="admin-item-actions">
+                                    <a class="btn btn-sm btn-ensi" href="{% url 'administration:campagne_detail' c.pk %}">Ouvrir</a>
+                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'administration:campagne_modifier' c.pk %}">Modifier</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">Aucune campagne.</p>
+                {% endfor %}
+            </div>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100"><div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 text-ensi mb-0">Evaluations enseignants (agrege)</h2>
+                <a class="small" href="{% url 'administration:campagnes' %}">Campagnes</a>
+            </div>
+            {% for s in stats_eval %}
+                <a class="stat-card-link mb-2" href="{% url 'administration:campagne_detail' s.reponse__campagne_id %}">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>{{ s.reponse__campagne__titre }}</span>
+                        <span class="small text-muted">{{ s.moyenne|floatformat:2 }}/5 · {{ s.total }} notes</span>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="text-muted mb-0">Aucune reponse.</p>
+            {% endfor %}
+        </div></div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const data = JSON.parse(document.getElementById('admin-graphs').textContent);
+const blue = '#0e4b8a', red = '#e54d3c';
+const palette = [blue, red, '#165ca8', '#c73d2e', '#082044', '#8aa4c2'];
+function bar(id, labels, values, color) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    new Chart(el, {
+        type: 'bar',
+        data: { labels, datasets: [{ data: values, backgroundColor: color || blue }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+function doughnut(id, labels, values) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    new Chart(el, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: palette }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+}
+bar('chartReco', data.reco_labels, data.reco_values);
+doughnut('chartNiveaux', data.niveaux_labels, data.niveaux_values);
+doughnut('chartRdv', data.rdv_labels, data.rdv_values);
+bar('chartEval', data.eval_labels, data.eval_values, red);
+const part = document.getElementById('chartPart');
+if (part) {
+    new Chart(part, {
+        type: 'bar',
+        data: {
+            labels: data.part_labels,
+            datasets: [
+                { label: 'Reponses', data: data.part_reponses, backgroundColor: blue },
+                { label: 'Autorises', data: data.part_autorises, backgroundColor: red }
+            ]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+</script>
+{% endblock %}
